@@ -12,8 +12,9 @@ library
 
   build-depends:        base >= 4.6,
                         ivory,
-                        ivory-stdlib
+                        ivory-stdlib,
+                        ivory-serialize
 
-  hs-source-dirs:       src
+  -- hs-source-dirs:       src
   default-language:     Haskell2010
   ghc-options:          -Wall -fno-warn-orphans

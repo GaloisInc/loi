@@ -1,70 +1,69 @@
+-- # -*- mode: haskell -*-
+
 struct CucsAuthorisationRequest
 {
-  idd :: Array 10 (Stored IChar);
-  messageInstance :: Stored Uint32;
-  messageType :: Stored Uint32;
-  messageLength :: Stored Sint32;
-  streamId :: Stored Sint32;
-  packetSequenceNumber :: Stored Sint32;
-  timeStamp :: Stored IDouble;
-  vehicleId :: Stored Sint32;
-  cucsId :: Stored Sint32;
-  vsmId :: Stored Sint32;
-  dataLinkId :: Stored Sint32;
-  vehicleType :: Stored Uint16;
-  vehicleSubtype :: Stored Uint16;
-  requestedHandoverLoi :: Stored Uint8;
-  controlledStation :: Stored Uint32;
-  controlledStationMode :: Stored Uint8;
-  waitForCoordination :: Stored Uint8;
+  struct ivory_string_LOI idd;
+  uint32_t messageInstance;
+  uint32_t messageType;
+  uint32_t messageLength;
+  int32_t streamId;
+  int32_t packetSequenceNumber;
+  double timeStamp;
+  int32_t vehicleId;
+  int32_t cucsId;
+  int32_t vsmId;
+  int32_t dataLinkId;
+  uint16_t vehicleType;
+  uint16_t vehicleSubtype;
+  uint8_t requestedHandoverLoi;
+  uint32_t controlledStation;
+  uint8_t controlledStationMode;
+  uint8_t waitForCoordination;
 }
 
+uint32_t cucsAuthorisationRequestMsgNum() { return 1; }
 
-uint32_t CucsAuthorisationRequestMsgNum() { return 1; }
-uint32_t CucsAuthorisationRequestLength() { return 35; }
+uint32_t cucsAuthorisationRequestLength() { return 35; }
 
-
-void CucsAuthorisationRequest_unpack(const *uint8_t[576] buf, * struct CucsAuthorisationRequest msg)
+void cucsAuthorisationRequest_unpack(*uint8_t[576] buf, * struct CucsAuthorisationRequest msg)
 {
-  unpackString(&buf[0], msg . idd);
-  unpackUint32(&buf[10], msg . messageInstance);
-  unpackUint32(&buf[14], msg . messageType);
-  unpackSint32(&buf[18], msg . messageLength);
-  unpackSint32(&buf[22], msg . streamId);
-  unpackSint32(&buf[26], msg . packetSequenceNumber);
-  unpackDouble(&buf[30], msg . timeStamp);
-  unpackSint32(&buf[38], msg . vehicleId);
-  unpackSint32(&buf[42], msg . cucsId);
-  unpackSint32(&buf[46], msg . vsmId);
-  unpackSint32(&buf[50], msg . dataLinkId);
-  unpackUint16(&buf[54], msg . vehicleType);
-  unpackUint16(&buf[56], msg . vehicleSubtype);
-  unpackUint8(&buf[58], msg . requestedHandoverLoi);
-  unpackUint32(&buf[59], msg . controlledStation);
-  unpackUint8(&buf[63], msg . controlledStationMode);
-  unpackUint8(&buf[64], msg . waitForCoordination);
+  unpackString(msg . idd,                             buf , 0 );
+  store msg -> messageInstance       as unpackUint32( buf , 10);
+  store msg -> messageType           as unpackUint32( buf , 14);
+  store msg -> messageLength         as unpackUint32( buf , 18);
+  store msg -> streamId              as unpackInt32(  buf , 22);
+  store msg -> packetSequenceNumber  as unpackInt32(  buf , 26);
+  store msg -> timeStamp             as unpackDouble( buf , 30);
+  store msg -> vehicleId             as unpackInt32(  buf , 38);
+  store msg -> cucsId                as unpackInt32(  buf , 42);
+  store msg -> vsmId                 as unpackInt32(  buf , 46);
+  store msg -> dataLinkId            as unpackInt32(  buf , 50);
+  store msg -> vehicleType           as unpackUint16( buf , 54);
+  store msg -> vehicleSubtype        as unpackUint16( buf , 56);
+  store msg -> requestedHandoverLoi  as unpackUint8(  buf , 58);
+  store msg -> controlledStation     as unpackUint32( buf , 59);
+  store msg -> controlledStationMode as unpackUint8(  buf , 63);
+  store msg -> waitForCoordination   as unpackUint8(  buf , 64);
 }
 
 
-void CucsAuthorisationRequest_pack(* struct CucsAuthorisationRequest msg, const *uint8_t[576] buf)
+void cucsAuthorisationRequest_pack(* struct CucsAuthorisationRequest msg, *uint8_t[576] buf)
 {
-  packString(msg . idd, &buf[0]);
-  packUint32(msg . messageInstance, &buf[10]);
-  packUint32(msg . messageType, &buf[14]);
-  packSint32(msg . messageLength, &buf[18]);
-  packSint32(msg . streamId, &buf[22]);
-  packSint32(msg . packetSequenceNumber, &buf[26]);
-  packDouble(msg . timeStamp, &buf[30]);
-  packSint32(msg . vehicleId, &buf[38]);
-  packSint32(msg . cucsId, &buf[42]);
-  packSint32(msg . vsmId, &buf[46]);
-  packSint32(msg . dataLinkId, &buf[50]);
-  packUint16(msg . vehicleType, &buf[54]);
-  packUint16(msg . vehicleSubtype, &buf[56]);
-  packUint8(msg . requestedHandoverLoi, &buf[58]);
-  packUint32(msg . controlledStation, &buf[59]);
-  packUint8(msg . controlledStationMode, &buf[63]);
-  packUint8(msg . waitForCoordination, &buf[64]);
+  packString(msg . idd,                    buf , 0 );
+  packUint32(msg -> messageInstance,       buf , 10);
+  packUint32(msg -> messageType,           buf , 14);
+  packUint32(msg -> messageLength,         buf , 18);
+  packInt32(msg  -> streamId,              buf , 22);
+  packInt32(msg  -> packetSequenceNumber,  buf , 26);
+  packDouble(msg -> timeStamp,             buf , 30);
+  packInt32(msg  -> vehicleId,             buf , 38);
+  packInt32(msg  -> cucsId,                buf , 42);
+  packInt32(msg  -> vsmId,                 buf , 46);
+  packInt32(msg  -> dataLinkId,            buf , 50);
+  packUint16(msg -> vehicleType,           buf , 54);
+  packUint16(msg -> vehicleSubtype,        buf , 56);
+  packUint8(msg  -> requestedHandoverLoi,  buf , 58);
+  packUint32(msg -> controlledStation,     buf , 59);
+  packUint8(msg  -> controlledStationMode, buf , 63);
+  packUint8(msg  -> waitForCoordination,   buf , 64);
 }
-
-

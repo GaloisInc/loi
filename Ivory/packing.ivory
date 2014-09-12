@@ -1,0 +1,77 @@
+-- # -*- mode: haskell -*-
+
+type Index = uint32_t;
+
+------------------------------------------------------------
+-- Packing
+
+void packInt32(int32_t v, *uint8_t[576] buf, Index ix) {
+  $pack(toCArray(buf), ix, v);
+}
+
+void packUint8(uint8_t v, *uint8_t[576] buf, Index ix) {
+  $pack(toCArray(buf), ix, v);
+}
+
+void packUint16(uint16_t v, *uint8_t[576] buf, Index ix) {
+  $pack(toCArray(buf), ix, v);
+}
+
+void packUint32(uint32_t v, *uint8_t[576] buf, Index ix) {
+  $pack(toCArray(buf), ix, v);
+}
+
+void packDouble(double v, *uint8_t[576] buf, Index ix) {
+  $pack(toCArray(buf), ix, v);
+}
+
+void packString(* struct ivory_string_LOI str, *uint8_t[576] buf, Index ix) {
+  map ix' {
+    let x = str.stringDataL[ix'];
+    $pack(toCArray(buf), $packIxAdd(ix, ix'), x);
+  }
+}
+
+------------------------------------------------------------
+-- Unpacking
+
+uint8_t unpackUint8(*uint8_t[576] buf, Index ix) {
+  x <- $unpack(const(toCArray(buf)), ix);
+  return x;
+}
+
+uint16_t unpackUint16(*uint8_t[576] buf, Index ix) {
+  x <- $unpack(const(toCArray(buf)), ix);
+  return x;
+}
+
+uint32_t unpackUint32(*uint8_t[576] buf, Index ix) {
+  x <- $unpack(const(toCArray(buf)), ix);
+  return x;
+}
+
+int16_t unpackInt16(*uint8_t[576] buf, Index ix) {
+  x <- $unpack(const(toCArray(buf)), ix);
+  return x;
+}
+
+int32_t unpackInt32(*uint8_t[576] buf, Index ix) {
+  x <- $unpack(const(toCArray(buf)), ix);
+  return x;
+}
+
+double unpackDouble(*uint8_t[576] buf, Index ix) {
+  x <- $unpack(const(toCArray(buf)), ix);
+  return x;
+}
+
+void unpackString( * struct ivory_string_LOI loi_str
+                 , * uint8_t[576] buf
+                 , Index ix)
+{
+  map ix' {
+    x <- $unpack(const(toCArray(buf)), $packIxAdd(ix, ix'));
+    store (loi_str.stringDataL)[ix'] as x;
+  }
+}
+
