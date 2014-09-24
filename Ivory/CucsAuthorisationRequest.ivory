@@ -2,30 +2,30 @@
 
 struct CucsAuthorisationRequest
 {
-  struct ivory_string_LOI idd;
+  struct   ivory_string_LOI idd;
   uint32_t messageInstance;
   uint32_t messageType;
   uint32_t messageLength;
-  int32_t streamId;
-  int32_t packetSequenceNumber;
-  double timeStamp;
-  int32_t vehicleId;
-  int32_t cucsId;
-  int32_t vsmId;
-  int32_t dataLinkId;
+  int32_t  streamId;
+  int32_t  packetSequenceNumber;
+  double   timeStamp;
+  int32_t  vehicleId;
+  int32_t  cucsId;
+  int32_t  vsmId;
+  int32_t  dataLinkId;
   uint16_t vehicleType;
   uint16_t vehicleSubtype;
-  uint8_t requestedHandoverLoi;
+  uint8_t  requestedHandoverLoi;
   uint32_t controlledStation;
-  uint8_t controlledStationMode;
-  uint8_t waitForCoordination;
+  uint8_t  controlledStationMode;
+  uint8_t  waitForCoordination;
 }
 
 uint32_t cucsAuthorisationRequestMsgNum() { return 1; }
 
 uint32_t cucsAuthorisationRequestLength() { return 35; }
 
-void cucsAuthorisationRequest_unpack(*uint8_t[576] buf, * struct CucsAuthorisationRequest msg)
+void cucsAuthorisationRequest_unpack(*Buf buf, * struct CucsAuthorisationRequest msg)
 {
   unpackString(msg . idd,                             buf , 0 );
   store msg -> messageInstance       as unpackUint32( buf , 10);
@@ -47,7 +47,7 @@ void cucsAuthorisationRequest_unpack(*uint8_t[576] buf, * struct CucsAuthorisati
 }
 
 
-void cucsAuthorisationRequest_pack(* struct CucsAuthorisationRequest msg, *uint8_t[576] buf)
+void cucsAuthorisationRequest_pack(* struct CucsAuthorisationRequest msg, *Buf buf)
 {
   packString(msg . idd,                    buf , 0 );
   packUint32(msg -> messageInstance,       buf , 10);

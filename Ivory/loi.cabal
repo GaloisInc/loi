@@ -8,7 +8,12 @@ cabal-version:       >= 1.10
 license:             BSD3
 
 library
-  exposed-modules:      LOI
+  exposed-modules:      LOI,
+                        Packing,
+                        CucsAuthorisationRequest,
+                        MessageAcknowledgement,
+                        VsmAuthorisationResponse,
+                        Types
 
   build-depends:        base >= 4.6,
                         ivory,
