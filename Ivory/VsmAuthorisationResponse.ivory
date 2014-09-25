@@ -1,5 +1,10 @@
 -- # -*- mode: haskell -*-
 
+struct maybe_VsmAuthorizationResponse
+  { struct VsmAuthorisationResponse m_auth;
+    bool valid;
+  }
+
 struct VsmAuthorisationResponse
 {
  struct ivory_string_LOI idd;

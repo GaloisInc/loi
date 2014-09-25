@@ -18,20 +18,20 @@
 module LOI where
 
 import Ivory.Language
-import Ivory.Stdlib.Maybe
 
 import qualified MessageAcknowledgement   as M
 import qualified CucsAuthorisationRequest as C
 import qualified VsmAuthorisationResponse as V
 
 
--- For CucsAuthorisationRequest idd field
+-- loi.ivory
 
--- instance MaybeType "maybe_StanagVsmAuthorizationResponse" StanagVsmAuthorizationResponse where
---   maybeValueLabel = m_auth
---   maybeValidLabel = m_valid
+mStations :: MemArea (Array 32 (Struct "Component"))
+mStations = area "mStations" Nothing
 
--- [ivoryFile|loi.ivory|]
+
+{-# LINE 0 "loi.ivory" #-}
+[ivoryFile|loi.ivory|]
 
 -- loiModule :: Module
 -- loiModule = package "loiModule" $ do
