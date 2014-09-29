@@ -18,6 +18,7 @@
 module LOI where
 
 import Ivory.Language
+import Ivory.Compile.C.CmdlineFrontend
 
 import qualified MessageAcknowledgement   as M
 import qualified CucsAuthorisationRequest as C

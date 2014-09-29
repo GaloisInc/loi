@@ -18,7 +18,10 @@ library
   build-depends:        base >= 4.6,
                         ivory,
                         ivory-stdlib,
-                        ivory-serialize
+                        ivory-serialize,
+                        ivory-opts,
+                        ivory-backend-c,
+                        language-c-quote
 
   -- hs-source-dirs:       src
   default-language:     Haskell2010
