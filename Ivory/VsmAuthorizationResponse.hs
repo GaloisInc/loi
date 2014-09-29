@@ -6,14 +6,14 @@
 -- Due to coverage condition on fundeps
 {-# LANGUAGE UndecidableInstances #-}
 
-module VsmAuthorisationResponse where
+module VsmAuthorizationResponse where
 
 import Ivory.Language
 
 import Types
 import Packing
 
-[ivoryFile|VsmAuthorisationResponse.ivory|]
+[ivoryFile|VsmAuthorizationResponse.ivory|]
 
 validResponse :: Ref s (Struct "maybe_VsmAuthorizationResponse") -> Ivory eff IBool
 validResponse ref = return =<< deref (ref ~> valid)

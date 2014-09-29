@@ -1,11 +1,11 @@
 -- # -*- mode: haskell -*-
 
 struct maybe_VsmAuthorizationResponse
-  { struct VsmAuthorisationResponse m_auth;
+  { struct VsmAuthorizationResponse m_auth;
     bool valid;
   }
 
-struct VsmAuthorisationResponse
+struct VsmAuthorizationResponse
 {
  struct ivory_string_LOI idd;
  uint32_t messageInstance;
@@ -27,11 +27,11 @@ struct VsmAuthorisationResponse
 }
 
 
-uint32_t vsmAuthorisationResponseMsgNum() { return 21; }
-uint32_t vsmAuthorisationResponseLength() { return 35; }
+uint32_t vsmAuthorizationResponseMsgNum() { return 21; }
+uint32_t vsmAuthorizationResponseLength() { return 35; }
 
 
-void vsmAuthorisationResponse_unpack(*Buf buf, * struct VsmAuthorisationResponse msg)
+void vsmAuthorizationResponse_unpack(*Buf buf, * struct VsmAuthorizationResponse msg)
 {
   unpackString(msg . idd, buf, 0);
   store msg -> messageInstance as unpackUint32(buf, 10);
@@ -53,7 +53,7 @@ void vsmAuthorisationResponse_unpack(*Buf buf, * struct VsmAuthorisationResponse
 }
 
 
-void vsmAuthorisationResponse_pack(* struct VsmAuthorisationResponse msg, *Buf buf)
+void vsmAuthorizationResponse_pack(* struct VsmAuthorizationResponse msg, *Buf buf)
 {
   packString(msg . idd, buf, 0);
   packUint32(msg -> messageInstance, buf, 10);

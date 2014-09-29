@@ -12,7 +12,7 @@ library
                         Packing,
                         CucsAuthorisationRequest,
                         MessageAcknowledgement,
-                        VsmAuthorisationResponse,
+                        VsmAuthorizationResponse,
                         Types
 
   build-depends:        base >= 4.6,

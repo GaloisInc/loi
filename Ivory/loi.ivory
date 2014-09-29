@@ -4,17 +4,17 @@
 
 --------------------------------------------------------------------------------
 -- XXX Made up definitions for now
-stanag_BROADCAST_ID = 0;
-max_NUM_CUCS = 0;
+int32_t stanag_BROADCAST_ID = 0xFFFFFFFF;
+max_NUM_CUCS  = 6;
 
-loi_2 = 2;
-loi_3 = 3;
-loi_4 = 4;
-loi_5 = 5;
+uint8_t loi_2 = 0x01;
+uint8_t loi_3 = 0x02;
+uint8_t loi_4 = 0x04;
+uint8_t loi_5 = 0x08;
 
 type Integeru1 = int32_t;
 
-cucsID          = 0;
+int32_t cucsID  = 0;
 mVehicleType    = 0;
 mVehicleSubType = 0;
 

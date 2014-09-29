@@ -25,9 +25,10 @@ void packDouble(double v, *uint8_t[576] buf, Index ix) {
   $pack(toCArray(buf), ix, v);
 }
 
-void packString(* struct ivory_string_LOI str, *uint8_t[576] buf, Index ix) {
-  map ix' {
-    let x = str.stringDataL[ix'];
+void packString(* struct ivory_string_LOI loi_str, *uint8_t[576] buf, Index ix) {
+  len <- $istr_len(const(loi_str));
+  upTo toIx(len) ix' {
+    let x = loi_str.stringDataL[ix'];
     $pack(toCArray(buf), $packIxAdd(ix, ix'), x);
   }
 }
@@ -69,9 +70,9 @@ void unpackString( * struct ivory_string_LOI loi_str
                  , * uint8_t[576] buf
                  , Index ix)
 {
-  map ix' {
+  len <- $istr_len(const(loi_str));
+  upTo toIx(len) ix' {
     x <- $unpack(const(toCArray(buf)), $packIxAdd(ix, ix'));
     store (loi_str.stringDataL)[ix'] as x;
   }
 }
-

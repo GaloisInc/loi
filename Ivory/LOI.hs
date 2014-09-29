@@ -21,7 +21,7 @@ import Ivory.Language
 
 import qualified MessageAcknowledgement   as M
 import qualified CucsAuthorisationRequest as C
-import qualified VsmAuthorisationResponse as V
+import qualified VsmAuthorizationResponse as V
 
 
 -- loi.ivory
@@ -33,7 +33,10 @@ mStations = area "mStations" Nothing
 {-# LINE 0 "loi.ivory" #-}
 [ivoryFile|loi.ivory|]
 
--- loiModule :: Module
--- loiModule = package "loiModule" $ do
---   depend packing
-  -- memcpy
+loiModule :: Module
+loiModule = package "loiModule" $ do
+  depend M.messageacknowledgement
+  depend C.cucsauthorisationrequest
+  depend V.vsmauthorizationresponse
+  depend loi
+
