@@ -15,10 +15,11 @@
 -- All rights reserved.
 --
 
-module LOI where
+module Main where
 
 import Ivory.Language
 import Ivory.Compile.C.CmdlineFrontend
+import Control.Monad
 
 import qualified MessageAcknowledgement   as M
 import qualified CucsAuthorisationRequest as C
@@ -43,10 +44,16 @@ nullResponse = area "response" (Just (istruct [V.cucsId .= ival 0]))
 
 [ivoryFile|loi.ivory|]
 
--- loiModule :: Module
--- loiModule = package "loiModule" $ do
---   depend M.messageacknowledgement
---   depend C.cucsauthorisationrequest
---   depend V.vsmauthorizationresponse
---   depend loi
+loiModule :: Module
+loiModule = package "loiModule" $ do
+   depend M.messageacknowledgement
+   depend C.cucsauthorisationrequest
+   depend V.vsmauthorizationresponse
+   depend loi
+
+allModules :: [Module]
+allModules = [ loi, loiModule, M.messageacknowledgement, C.cucsauthorisationrequest, V.vsmauthorizationresponse ]
+
+
+main = void $ runCompiler allModules initialOpts { constFold = True, includeDir = "output", srcDir = "output"  }
 
