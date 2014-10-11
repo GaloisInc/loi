@@ -1,5 +1,7 @@
 -- # -*- mode: haskell -*-
 
+include packing
+include typesModule
 
 struct VsmAuthorizationResponse
 {

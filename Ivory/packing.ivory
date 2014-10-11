@@ -1,5 +1,7 @@
 -- # -*- mode: haskell -*-
 
+include typesModule
+
 type Index = uint32_t;
 
 ------------------------------------------------------------

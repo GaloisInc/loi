@@ -1,8 +1,10 @@
 -- # -*- mode: haskell -*-
 
+include loiModule
+
 -- LOI implementation in Ivory
 
-int32_t stanag_BROADCAST_ID = 0xFFFFFFFF;
+int32_t stanag_BROADCAST_ID = -1;
 max_NUM_CUCS  = 6;
 
 uint8_t loi_2 = 0x01;
@@ -17,28 +19,22 @@ uint8_t loi_5 = 0x08;
 mVehicleType    = 0;
 mVehicleSubType = 0;
 
-struct Component {
- int32_t next;
- bool nextValid;
- ix_t 6 auth_idx;
-}
-
 --------------------------------------------------------------------------------
 
 G* struct VsmAuthorizationResponse findResponse(int32_t cucsID) {
 
   map ix {
-    if ((&responses)@ix -> V.cucsId == cucsID) {
-      return (&responses)@ix;
+    if ((&mActiveCucs)@ix -> V.cucsId == cucsID) {
+      return (&mActiveCucs)@ix;
     } else {}
   }
-  return &nullResponse;
+  return &noResponse;
 }
 
 int32_t getActiveCUCSCount() {
   alloc *cnt = 0;
   map ix {
-    if ((&responses)@ix -> V.cucsId != 0) {
+    if ((&mActiveCucs)@ix -> V.cucsId != 0) {
       store cnt as *cnt + 1;
     } else {}
   }
@@ -48,13 +44,13 @@ int32_t getActiveCUCSCount() {
 G* struct VsmAuthorizationResponse getCucsAuthorization(int32_t cucsID) {
 
   if (( 0 == cucsID)  || (cucsID == stanag_BROADCAST_ID)) {
-     return &nullResponse;
+     return &noResponse;
   } else {}
 
   let response = findResponse(cucsID);
   if (response->V.cucsId == 0) {
     if (getActiveCUCSCount() == max_NUM_CUCS) {
-      return &nullResponse;
+      return &noResponse;
     } else {}
 
     store response.V.cucsId         as cucsID;
@@ -68,24 +64,27 @@ G* struct VsmAuthorizationResponse getCucsAuthorization(int32_t cucsID) {
 
   -- check if cucs has or can get 3
   map ii {
-    let station_idx = (&mStations)@ii->auth_idx;
+	-- if station doesn't exist, can't get 3 here
     if (!((&mStations)@ii -> nextValid)) { }
     else {
-      if (   (&responses)@station_idx -> V.cucsId == 0
-          || (&responses)@station_idx -> V.cucsId == cucsID) {
+	  let stationCucs = ((&mActiveCucs)@((&mStations)@ii->auth_idx))->V.cucsId;
+      if (stationCucs == 0 || stationCucs == cucsID) {
         store authorized as (*authorized | loi_3);
       } else {}
     }
   }
 
-  let vehicle_idx = (&mVehicle)->auth_idx;
-  if (   (&responses)@vehicle_idx -> V.cucsId == 0
-      || (&responses)@vehicle_idx -> V.cucsId == cucsID) {
+  let vehicleCucs = ((&mActiveCucs)@((&mVehicle)->auth_idx))->V.cucsId;
+  if (vehicleCucs == 0 || vehicleCucs == cucsID) {
     store authorized as  (*authorized | loi_4 | loi_5);
   }
   else {}
 
   store response.V.loiAuthorized as *authorized;
+
+  let jj = 2;
+  let test1 = (&mActiveCucs)@jj;
+  -- let test2 = &mActiveCucs[2];
 
   return response;
 }

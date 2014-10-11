@@ -24,6 +24,8 @@ import Control.Monad
 import qualified MessageAcknowledgement   as M
 import qualified CucsAuthorisationRequest as C
 import qualified VsmAuthorizationResponse as V
+import Types
+import Packing
 
 -- loi.ivory
 
@@ -34,25 +36,33 @@ mVehicle :: MemArea (Struct "Component")
 mVehicle = area "mVehicle" Nothing
 
 -- Must be == max_NUM_CUCS
-responses :: MemArea (Array 6 (Struct "VsmAuthorizationResponse"))
-responses = area "responses" (Just (iarray (replicate 6 response)))
+mActiveCucs :: MemArea (Array 6 (Struct "VsmAuthorizationResponse"))
+mActiveCucs = area "mActiveCucs" (Just (iarray (replicate 6 response)))
   where
   response = istruct [V.cucsId .= ival 0]
 
-nullResponse :: MemArea (Struct "VsmAuthorizationResponse")
-nullResponse = area "response" (Just (istruct [V.cucsId .= ival 0]))
+noResponse :: MemArea (Struct "VsmAuthorizationResponse")
+noResponse = area "noResponse" (Just (istruct [V.cucsId .= ival 0]))
+
+--typesModule :: Module
 
 [ivoryFile|loi.ivory|]
 
 loiModule :: Module
 loiModule = package "loiModule" $ do
+   depend typesModule
+   depend packing
    depend M.messageacknowledgement
    depend C.cucsauthorisationrequest
    depend V.vsmauthorizationresponse
    depend loi
+   defMemArea mStations
+   defMemArea mVehicle
+   defMemArea mActiveCucs
+   defMemArea noResponse
 
 allModules :: [Module]
-allModules = [ loi, loiModule, M.messageacknowledgement, C.cucsauthorisationrequest, V.vsmauthorizationresponse ]
+allModules = [ loi, packing, typesModule, loiModule, M.messageacknowledgement, C.cucsauthorisationrequest, V.vsmauthorizationresponse ]
 
 
 main = void $ runCompiler allModules initialOpts { constFold = True, includeDir = "output", srcDir = "output"  }

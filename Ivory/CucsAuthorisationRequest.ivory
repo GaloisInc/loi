@@ -1,5 +1,8 @@
 -- # -*- mode: haskell -*-
 
+include packing
+include typesModule
+
 struct CucsAuthorisationRequest
 {
   struct   ivory_string_LOI idd;
