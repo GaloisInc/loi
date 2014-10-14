@@ -1,9 +1,5 @@
 -- # -*- mode: haskell -*-
 
-struct maybe_VsmAuthorizationResponse
-  { struct VsmAuthorizationResponse m_auth;
-    bool valid;
-  }
 
 struct VsmAuthorizationResponse
 {
@@ -34,22 +30,22 @@ uint32_t vsmAuthorizationResponseLength() { return 35; }
 void vsmAuthorizationResponse_unpack(*Buf buf, * struct VsmAuthorizationResponse msg)
 {
   unpackString(msg . idd, buf, 0);
-  store msg -> messageInstance as unpackUint32(buf, 10);
-  store msg -> messageType as unpackUint32(buf, 14);
-  store msg -> messageLength as unpackInt32(buf, 18);
-  store msg -> streamId as unpackInt32(buf, 22);
-  store msg -> packetSequenceNumber as unpackInt32(buf, 26);
-  store msg -> timeStamp as unpackDouble(buf, 30);
-  store msg -> vehicleId as unpackInt32(buf, 38);
-  store msg -> cucsId as unpackInt32(buf, 42);
-  store msg -> vsmId as unpackInt32(buf, 46);
-  store msg -> dataLinkId as unpackInt32(buf, 50);
-  store msg -> loiAuthorized as unpackUint8(buf, 54);
-  store msg -> loiGranted as unpackUint8(buf, 55);
-  store msg -> controlledStation as unpackUint32(buf, 56);
-  store msg -> controlledStationMode as unpackUint8(buf, 60);
-  store msg -> vehicleType as unpackUint16(buf, 61);
-  store msg -> vehicleSubtype as unpackUint16(buf, 63);
+  store msg.messageInstance as unpackUint32(buf, 10);
+  store msg.messageType as unpackUint32(buf, 14);
+  store msg.messageLength as unpackInt32(buf, 18);
+  store msg.streamId as unpackInt32(buf, 22);
+  store msg.packetSequenceNumber as unpackInt32(buf, 26);
+  store msg.timeStamp as unpackDouble(buf, 30);
+  store msg.vehicleId as unpackInt32(buf, 38);
+  store msg.cucsId as unpackInt32(buf, 42);
+  store msg.vsmId as unpackInt32(buf, 46);
+  store msg.dataLinkId as unpackInt32(buf, 50);
+  store msg.loiAuthorized as unpackUint8(buf, 54);
+  store msg.loiGranted as unpackUint8(buf, 55);
+  store msg.controlledStation as unpackUint32(buf, 56);
+  store msg.controlledStationMode as unpackUint8(buf, 60);
+  store msg.vehicleType as unpackUint16(buf, 61);
+  store msg.vehicleSubtype as unpackUint16(buf, 63);
 }
 
 

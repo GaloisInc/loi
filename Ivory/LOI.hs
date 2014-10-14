@@ -24,20 +24,29 @@ import qualified MessageAcknowledgement   as M
 import qualified CucsAuthorisationRequest as C
 import qualified VsmAuthorizationResponse as V
 
-
 -- loi.ivory
 
 mStations :: MemArea (Array 32 (Struct "Component"))
 mStations = area "mStations" Nothing
 
+mVehicle :: MemArea (Struct "Component")
+mVehicle = area "mVehicle" Nothing
 
-{-# LINE 0 "loi.ivory" #-}
+-- Must be == max_NUM_CUCS
+responses :: MemArea (Array 6 (Struct "VsmAuthorizationResponse"))
+responses = area "responses" (Just (iarray (replicate 6 response)))
+  where
+  response = istruct [V.cucsId .= ival 0]
+
+nullResponse :: MemArea (Struct "VsmAuthorizationResponse")
+nullResponse = area "response" (Just (istruct [V.cucsId .= ival 0]))
+
 [ivoryFile|loi.ivory|]
 
-loiModule :: Module
-loiModule = package "loiModule" $ do
-  depend M.messageacknowledgement
-  depend C.cucsauthorisationrequest
-  depend V.vsmauthorizationresponse
-  depend loi
+-- loiModule :: Module
+-- loiModule = package "loiModule" $ do
+--   depend M.messageacknowledgement
+--   depend C.cucsauthorisationrequest
+--   depend V.vsmauthorizationresponse
+--   depend loi
 

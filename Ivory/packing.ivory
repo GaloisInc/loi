@@ -73,6 +73,6 @@ void unpackString( * struct ivory_string_LOI loi_str
   len <- $istr_len(const(loi_str));
   upTo toIx(len) ix' {
     x <- $unpack(const(toCArray(buf)), $packIxAdd(ix, ix'));
-    store (loi_str.stringDataL)[ix'] as x;
+    store (loi_str.stringDataL)@ix' as x;
   }
 }

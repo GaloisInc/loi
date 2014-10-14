@@ -2,8 +2,6 @@
 
 -- LOI implementation in Ivory
 
---------------------------------------------------------------------------------
--- XXX Made up definitions for now
 int32_t stanag_BROADCAST_ID = 0xFFFFFFFF;
 max_NUM_CUCS  = 6;
 
@@ -12,79 +10,82 @@ uint8_t loi_3 = 0x02;
 uint8_t loi_4 = 0x04;
 uint8_t loi_5 = 0x08;
 
-type Integeru1 = int32_t;
+--------------------------------------------------------------------------------
+-- XXX Made up definitions for now
 
-int32_t cucsID  = 0;
+-- Startup config values
 mVehicleType    = 0;
 mVehicleSubType = 0;
 
-void findResponse(* struct maybe_VsmAuthorizationResponse maybe_response, int32_t cucsID)
-  { return; }
-int32_t  getActiveCUCSCount() { return 0; }
-int32_t  setCucsId(int32_t cucsID) { return 0; }
-uint16_t setVehicleType(uint16_t mvt) { return 0; }
-uint16_t setVehicleSubType(uint16_t mvst) { return 0; }
-
 struct Component {
  int32_t next;
-  struct maybe_VsmAuthorizationResponse auth;
+ bool nextValid;
+ ix_t 6 auth_idx;
 }
 
 --------------------------------------------------------------------------------
 
--- XXX There aren't null pointers in Ivory. So we'll pass in a reference to a
--- response struct that contains an extra field letting us know whether it is
--- valid or not.
-void getCucsAuthorization(* struct maybe_VsmAuthorizationResponse maybe_response, int32_t cucsID) {
+G* struct VsmAuthorizationResponse findResponse(int32_t cucsID) {
 
-  -- XXX need to initialize response with default fields?
-  let response = maybe_response . V.m_auth;
+  map ix {
+    if ((&responses)@ix -> V.cucsId == cucsID) {
+      return (&responses)@ix;
+    } else {}
+  }
+  return &nullResponse;
+}
+
+int32_t getActiveCUCSCount() {
+  alloc *cnt = 0;
+  map ix {
+    if ((&responses)@ix -> V.cucsId != 0) {
+      store cnt as *cnt + 1;
+    } else {}
+  }
+  return *cnt;
+}
+
+G* struct VsmAuthorizationResponse getCucsAuthorization(int32_t cucsID) {
 
   if (( 0 == cucsID)  || (cucsID == stanag_BROADCAST_ID)) {
-     $V.setInvalidResponse(maybe_response);
-     return;
+     return &nullResponse;
   } else {}
 
-  -- find cucs authority in list
-  findResponse(maybe_response, cucsID);
-
-  -- if didn't find it, look for open spot or return if full
-  b <- $V.validResponse(maybe_response);
-  if (! b) {
+  let response = findResponse(cucsID);
+  if (response->V.cucsId == 0) {
     if (getActiveCUCSCount() == max_NUM_CUCS) {
-      return;
-    }
-    else {}
-    -- Note, do not add to list yet, we do that later if they are actually
-    -- granted something
+      return &nullResponse;
+    } else {}
 
-    store response->V.cucsId         as setCucsId(cucsID);
-    store response->V.vehicleType    as setVehicleType(mVehicleType);
-    store response->V.vehicleSubtype as setVehicleSubType(mVehicleSubType);
-  }
-  else { }
+    store response.V.cucsId         as cucsID;
+    store response.V.vehicleType    as mVehicleType;
+    store response.V.vehicleSubtype as mVehicleSubType;
+
+  } else {}
 
   -- everyone can get 2
   alloc *authorized = loi_2;
 
   -- check if cucs has or can get 3
   map ii {
-    if ((&mStations)@ii -> next == 0) { }
+    let station_idx = (&mStations)@ii->auth_idx;
+    if (!((&mStations)@ii -> nextValid)) { }
     else {
-      if (!(&mStations)@ii . auth -> V.valid || (&mStations)@ii . auth . V.m_auth -> V.cucsId == cucsID) {
-        store *authorized as (*authorized | loi_3);
-      }
-      else {}
+      if (   (&responses)@station_idx -> V.cucsId == 0
+          || (&responses)@station_idx -> V.cucsId == cucsID) {
+        store authorized as (*authorized | loi_3);
+      } else {}
     }
   }
-  -- check if vehicle has or can get 4/5
 
-  -- XXX add mVehicle struct
-  -- if ((mVehicle.auth == NULL) || (mVehicle.auth->getCucsId() == cucsID))
-  if (true) {
-    store *authorized as  (*authorized | loi_4 | loi_5);
+  let vehicle_idx = (&mVehicle)->auth_idx;
+  if (   (&responses)@vehicle_idx -> V.cucsId == 0
+      || (&responses)@vehicle_idx -> V.cucsId == cucsID) {
+    store authorized as  (*authorized | loi_4 | loi_5);
   }
   else {}
-  store response->V.loiAuthorized as *authorized;
-  return;
+
+  store response.V.loiAuthorized as *authorized;
+
+  return response;
 }
