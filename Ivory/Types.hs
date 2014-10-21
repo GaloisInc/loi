@@ -13,10 +13,11 @@ type Buf = Array 576 (Stored Uint8)
 [ivory|
 string struct LOI 10
 
-struct Component {
+struct StationStatus {
  int32_t next;
  bool nextValid;
- ix_t 6 auth_idx;
+ bool overriden;
+ ix_t 6 authIdx;
 }
 
 |]
@@ -24,6 +25,6 @@ struct Component {
 typesModule :: Module
 typesModule = package "typesModule" $ do
     defStruct (Proxy :: Proxy "ivory_string_LOI")
-    defStruct (Proxy :: Proxy "Component")
+    defStruct (Proxy :: Proxy "StationStatus")
 	
 

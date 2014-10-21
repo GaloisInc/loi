@@ -29,10 +29,10 @@ import Packing
 
 -- loi.ivory
 
-mStations :: MemArea (Array 32 (Struct "Component"))
+mStations :: MemArea (Array 32 (Struct "StationStatus"))
 mStations = area "mStations" Nothing
 
-mVehicle :: MemArea (Struct "Component")
+mVehicle :: MemArea (Struct "StationStatus")
 mVehicle = area "mVehicle" Nothing
 
 -- Must be == max_NUM_CUCS

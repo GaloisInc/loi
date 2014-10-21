@@ -6,6 +6,14 @@ include loiModule
 
 int32_t stanag_BROADCAST_ID = -1;
 max_NUM_CUCS  = 6;
+g_CUCS_OFFSET = 42;
+g_TYPE_OFFSET = 14;
+int32_t g_CUCS_AUTHORIZATION_REQUEST = 1;
+int32_t g_PAYLOADSTEERINGCOMMAND = 200;
+int32_t g_EOLASERPAYLOADCOMMAND = 201;
+int32_t g_PAYLOADCONFIGURATION = 300;
+int32_t g_EOIRCONFIGURATIONSTATE = 301;
+int32_t g_EOIRLASEROPERATINGSTATE = 302;
 
 uint8_t loi_2 = 0x01;
 uint8_t loi_3 = 0x02;
@@ -21,17 +29,18 @@ mVehicleSubType = 0;
 
 --------------------------------------------------------------------------------
 
-G* struct VsmAuthorizationResponse findResponse(int32_t cucsID) {
-
+int32_t findResponse(int32_t cucsID) {
   map ix {
     if ((&mActiveCucs)@ix -> V.cucsId == cucsID) {
-      return (&mActiveCucs)@ix;
+	  return safeCast(ix);
     } else {}
   }
-  return &noResponse;
+  return -1;
 }
 
-int32_t getActiveCUCSCount() {
+
+int32_t getActiveCUCSCount() 
+{
   alloc *cnt = 0;
   map ix {
     if ((&mActiveCucs)@ix -> V.cucsId != 0) {
@@ -41,50 +50,131 @@ int32_t getActiveCUCSCount() {
   return *cnt;
 }
 
-G* struct VsmAuthorizationResponse getCucsAuthorization(int32_t cucsID) {
 
-  if (( 0 == cucsID)  || (cucsID == stanag_BROADCAST_ID)) {
-     return &noResponse;
-  } else {}
-
-  let response = findResponse(cucsID);
-  if (response->V.cucsId == 0) {
-    if (getActiveCUCSCount() == max_NUM_CUCS) {
-      return &noResponse;
-    } else {}
-
-    store response.V.cucsId         as cucsID;
-    store response.V.vehicleType    as mVehicleType;
-    store response.V.vehicleSubtype as mVehicleSubType;
-
-  } else {}
-
-  -- everyone can get 2
-  alloc *authorized = loi_2;
-
-  -- check if cucs has or can get 3
-  map ii {
-	-- if station doesn't exist, can't get 3 here
-    if (!((&mStations)@ii -> nextValid)) { }
-    else {
-	  let stationCucs = ((&mActiveCucs)@((&mStations)@ii->auth_idx))->V.cucsId;
-      if (stationCucs == 0 || stationCucs == cucsID) {
-        store authorized as (*authorized | loi_3);
-      } else {}
+bool stanagChecksum(*uint8_t[576] buf, uint32_t len)
+{
+    let bound = len - 4;
+	let tomatch = unpackUint32(buf, bound);
+    alloc *check = 0;
+ 
+    let ix_t 576 boundIx = toIx(twosCompCast(bound));
+    upTo boundIx ix {
+        let uint32_t data = safeCast(buf[ix]);
+        store check as *check + data;
     }
-  }
 
-  let vehicleCucs = ((&mActiveCucs)@((&mVehicle)->auth_idx))->V.cucsId;
-  if (vehicleCucs == 0 || vehicleCucs == cucsID) {
-    store authorized as  (*authorized | loi_4 | loi_5);
-  }
-  else {}
-
-  store response.V.loiAuthorized as *authorized;
-
-  let jj = 2;
-  let test1 = (&mActiveCucs)@jj;
-  -- let test2 = &mActiveCucs[2];
-
-  return response;
+    return (*check == tomatch);
 }
+
+
+void processIncoming(*uint8_t[576] buf, uint32_t size)
+{
+	-- checksum check
+	if (!stanagChecksum(buf, size))
+	{
+        -- LOG.notice("LOI : message from CUCS 0x%08X failed checksum", cucsId);
+		return;
+	} else {}
+
+	let cucsId = unpackInt32(buf, g_CUCS_OFFSET);
+	let msgType = unpackInt32(buf, g_TYPE_OFFSET);
+
+	if (msgType == g_CUCS_AUTHORIZATION_REQUEST)
+	{
+		-- alloc *struct CucsAuthorisationRequest msg;
+		-- cucsAuthorisationRequest_unpack(buf, msg);
+
+		-- handleStanagCucsAuthorizationRequest(msg);
+		-- AckAuthorizationRequest(msg);
+		return;
+	} else {}
+
+	if (applyLoiMessageFilter(cucsId, msgType))
+	{
+--		alloc *offset = 0;
+
+		-- covert switch statement
+--		if ((msgType == g_PAYLOADSTEERINGCOMMAND) || (msgType == g_EOIRLASEROPERATINGSTATE) || (msgType == g_EOLASERPAYLOADCOMMAND))
+--		{
+--			store offset as 4;
+--		} else { }
+--
+--		if (msgType == g_EOIRCONFIGURATIONSTATE)
+--		{
+--			store offset as 8;
+--		} else {
+--		
+--		if (msgType == g_PAYLOADCONFIGURATION)
+--		{
+--			store offset as 12;
+--		} else {}}}
+--
+		-- station message, figure out where to deliver it and do so (if there is a station present)
+--		if (offset > 0)
+--		{
+--			let stationbits = unpackUint32(buf, g_CUCS_OFFSET + *offset);
+--			for (int ii = 0; ii < 32; ii++)
+--			{
+--				if ((((1 << ii) & stationbits) > 0) && (mStations[ii].nextvalid))
+--				{
+--					mStations[ii].next->processIncoming(buf, size);
+--				}
+--			}
+--		}
+		-- otherwise, this goes to the vehicle for processing
+--		else
+--		{
+			-- mVehicle.next->processIncoming(buf, size);
+--		}
+	} else {}
+
+}
+
+
+bool applyLoiMessageFilter( int32_t cucsId, int32_t msgType )
+{
+	return true;
+}
+
+void ackAuthorizationRequest( * struct CucsAuthorisationRequest msg )
+{
+}
+
+void sendAuthorizationResponse( * struct VsmAuthorizationResponse msg )
+{
+}
+
+uint8_t requiredLOI(int32_t messageType)
+{
+	return 0;
+}
+
+void processOutgoing(*uint8_t[576] buf, uint32_t size)
+{
+}
+
+uint8_t generateAuthorized(int32_t cucsId)
+{
+	return 0;
+}
+
+void requestLOI3(* struct CucsAuthorisationRequest request, int32_t responseIndex, int32_t stationIndex)
+{
+}
+
+void requestLOI45(* struct CucsAuthorisationRequest request, int32_t responseIndex, int32_t requestedLOI)
+{
+}
+
+void dropLOI(* struct CucsAuthorisationRequest request, int32_t responseIdx)
+{
+}
+
+void requestLOI(* struct CucsAuthorisationRequest request, int32_t responseIdx)
+{
+}
+
+void handleStanagCucsAuthorizationRequest(* struct CucsAuthorisationRequest request)
+{
+}
+
