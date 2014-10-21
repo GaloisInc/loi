@@ -91,27 +91,28 @@ void processIncoming(*uint8_t[576] buf, uint32_t size)
 
 	if (applyLoiMessageFilter(cucsId, msgType))
 	{
---		alloc *offset = 0;
+		let int32_t z = 0;
+		alloc *offset = z;
 
 		-- covert switch statement
---		if ((msgType == g_PAYLOADSTEERINGCOMMAND) || (msgType == g_EOIRLASEROPERATINGSTATE) || (msgType == g_EOLASERPAYLOADCOMMAND))
---		{
---			store offset as 4;
---		} else { }
---
---		if (msgType == g_EOIRCONFIGURATIONSTATE)
---		{
---			store offset as 8;
---		} else {
---		
---		if (msgType == g_PAYLOADCONFIGURATION)
---		{
---			store offset as 12;
---		} else {}}}
---
+		if ((msgType == g_PAYLOADSTEERINGCOMMAND) || (msgType == g_EOIRLASEROPERATINGSTATE) || (msgType == g_EOLASERPAYLOADCOMMAND))
+		{
+			store offset as 4;
+		} else { 
+
+		if (msgType == g_EOIRCONFIGURATIONSTATE)
+		{
+			store offset as 8;
+		} else {
+		
+		if (msgType == g_PAYLOADCONFIGURATION)
+		{
+			store offset as 12;
+		} else {}}}
+
 		-- station message, figure out where to deliver it and do so (if there is a station present)
---		if (offset > 0)
---		{
+		if (*offset > 0)
+		{
 --			let stationbits = unpackUint32(buf, g_CUCS_OFFSET + *offset);
 --			for (int ii = 0; ii < 32; ii++)
 --			{
@@ -120,12 +121,12 @@ void processIncoming(*uint8_t[576] buf, uint32_t size)
 --					mStations[ii].next->processIncoming(buf, size);
 --				}
 --			}
---		}
+		}
 		-- otherwise, this goes to the vehicle for processing
---		else
---		{
+		else
+		{
 			-- mVehicle.next->processIncoming(buf, size);
---		}
+		}
 	} else {}
 
 }
