@@ -26,6 +26,7 @@ import qualified CucsAuthorisationRequest as C
 import qualified VsmAuthorizationResponse as V
 import Types
 import Packing
+import LOIMap
 
 -- loi.ivory
 
@@ -41,12 +42,8 @@ mActiveCucs = area "mActiveCucs" (Just (iarray (replicate 6 response)))
   where
   response = istruct [V.cucsId .= ival 0]
 
-noResponse :: MemArea (Struct "VsmAuthorizationResponse")
-noResponse = area "noResponse" (Just (istruct [V.cucsId .= ival 0]))
-
---typesModule :: Module
-
 [ivoryFile|loi.ivory|]
+
 
 loiModule :: Module
 loiModule = package "loiModule" $ do
@@ -59,10 +56,9 @@ loiModule = package "loiModule" $ do
    defMemArea mStations
    defMemArea mVehicle
    defMemArea mActiveCucs
-   defMemArea noResponse
 
 allModules :: [Module]
-allModules = [ loi, packing, typesModule, loiModule, M.messageacknowledgement, C.cucsauthorisationrequest, V.vsmauthorizationresponse ]
+allModules = [ loi, packing, typesModule, loiModule, loiMapModule, M.messageacknowledgement, C.cucsauthorisationrequest, V.vsmauthorizationresponse ]
 
 
 main = void $ runCompiler allModules initialOpts { constFold = True, includeDir = "output", srcDir = "output"  }

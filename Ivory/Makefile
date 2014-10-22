@@ -42,6 +42,7 @@ endif
 .PHONY: clean
 clean:
 	-rm -rf dist
+	-rm -rf *.o *.hi LOI
 
 .PHONY: veryclean
 veryclean: clean
