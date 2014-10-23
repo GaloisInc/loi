@@ -34,7 +34,7 @@ void cucsAuthorisationRequest_setvehicleSubtype(*struct CucsAuthorisationRequest
   store msg.vehicleSubtype as val;
 }
 
-void cucsAuthorisationRequest_unpack(*Buf buf, * struct CucsAuthorisationRequest msg)
+void cucsAuthorisationRequest_unpack(*StanagBuf buf, * struct CucsAuthorisationRequest msg)
 {
   unpackStanagString(msg.idd, buf, 0, 10);
   store msg.messageInstance as unpackUint32(buf, 10);
@@ -56,7 +56,7 @@ void cucsAuthorisationRequest_unpack(*Buf buf, * struct CucsAuthorisationRequest
 }
 
 
-void cucsAuthorisationRequest_pack(* struct CucsAuthorisationRequest msg, *Buf buf)
+void cucsAuthorisationRequest_pack(* struct CucsAuthorisationRequest msg, *StanagBuf buf)
 {
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);

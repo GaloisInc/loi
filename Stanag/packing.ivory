@@ -7,27 +7,27 @@ string struct Stanaglong 400
 ------------------------------------------------------------
 -- Packing
 
-void packInt32(int32_t v, *uint8_t[576] buf, Index ix) {
+void packInt32(int32_t v, *StanagBuf buf, Index ix) {
   $pack(toCArray(buf), ix, v);
 }
 
-void packUint8(uint8_t v, *uint8_t[576] buf, Index ix) {
+void packUint8(uint8_t v, *StanagBuf buf, Index ix) {
   $pack(toCArray(buf), ix, v);
 }
 
-void packUint16(uint16_t v, *uint8_t[576] buf, Index ix) {
+void packUint16(uint16_t v, *StanagBuf buf, Index ix) {
   $pack(toCArray(buf), ix, v);
 }
 
-void packUint32(uint32_t v, *uint8_t[576] buf, Index ix) {
+void packUint32(uint32_t v, *StanagBuf buf, Index ix) {
   $pack(toCArray(buf), ix, v);
 }
 
-void packDouble(double v, *uint8_t[576] buf, Index ix) {
+void packDouble(double v, *StanagBuf buf, Index ix) {
   $pack(toCArray(buf), ix, v);
 }
 
-void packStanagString(* struct ivory_string_Stanag str, *uint8_t[576] buf, Index ix, int32_t size) {
+void packStanagString(* struct ivory_string_Stanag str, *StanagBuf buf, Index ix, int32_t size) {
   len <- $istr_len(const(str));
   upTo toIx(len) ix' {
     let x = str.stringDataL[ix'];
@@ -38,37 +38,37 @@ void packStanagString(* struct ivory_string_Stanag str, *uint8_t[576] buf, Index
 ------------------------------------------------------------
 -- Unpacking
 
-uint8_t unpackUint8(*uint8_t[576] buf, Index ix) {
+uint8_t unpackUint8(*StanagBuf buf, Index ix) {
   x <- $unpack(const(toCArray(buf)), ix);
   return x;
 }
 
-uint16_t unpackUint16(*uint8_t[576] buf, Index ix) {
+uint16_t unpackUint16(*StanagBuf buf, Index ix) {
   x <- $unpack(const(toCArray(buf)), ix);
   return x;
 }
 
-uint32_t unpackUint32(*uint8_t[576] buf, Index ix) {
+uint32_t unpackUint32(*StanagBuf buf, Index ix) {
   x <- $unpack(const(toCArray(buf)), ix);
   return x;
 }
 
-int16_t unpackInt16(*uint8_t[576] buf, Index ix) {
+int16_t unpackInt16(*StanagBuf buf, Index ix) {
   x <- $unpack(const(toCArray(buf)), ix);
   return x;
 }
 
-int32_t unpackInt32(*uint8_t[576] buf, Index ix) {
+int32_t unpackInt32(*StanagBuf buf, Index ix) {
   x <- $unpack(const(toCArray(buf)), ix);
   return x;
 }
 
-double unpackDouble(*uint8_t[576] buf, Index ix) {
+double unpackDouble(*StanagBuf buf, Index ix) {
   x <- $unpack(const(toCArray(buf)), ix);
   return x;
 }
 
-void unpackStanagString( * struct ivory_string_Stanag str , * uint8_t[576] buf , Index ix, int32_t size)
+void unpackStanagString( * struct ivory_string_Stanag str , * StanagBuf buf , Index ix, int32_t size)
 {
   len <- $istr_len(const(str));
   upTo toIx(len) ix' {

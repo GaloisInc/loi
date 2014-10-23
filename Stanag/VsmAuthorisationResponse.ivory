@@ -34,7 +34,7 @@ void vsmAuthorisationResponse_setvehicleSubtype(*struct VsmAuthorisationResponse
   store msg.vehicleSubtype as val;
 }
 
-void vsmAuthorisationResponse_unpack(*Buf buf, * struct VsmAuthorisationResponse msg)
+void vsmAuthorisationResponse_unpack(*StanagBuf buf, * struct VsmAuthorisationResponse msg)
 {
   unpackStanagString(msg.idd, buf, 0, 10);
   store msg.messageInstance as unpackUint32(buf, 10);
@@ -56,7 +56,7 @@ void vsmAuthorisationResponse_unpack(*Buf buf, * struct VsmAuthorisationResponse
 }
 
 
-void vsmAuthorisationResponse_pack(* struct VsmAuthorisationResponse msg, *Buf buf)
+void vsmAuthorisationResponse_pack(* struct VsmAuthorisationResponse msg, *StanagBuf buf)
 {
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);

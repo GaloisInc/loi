@@ -52,7 +52,7 @@ int32_t getActiveCUCSCount()
 }
 
 
-bool stanagChecksum(*uint8_t[576] buf, uint32_t len)
+bool stanagChecksum(*StanagBuf buf, uint32_t len)
 {
     let bound = len - 4;
 	let tomatch = unpackUint32(buf, bound);
@@ -68,7 +68,7 @@ bool stanagChecksum(*uint8_t[576] buf, uint32_t len)
 }
 
 
-void processIncoming(*uint8_t[576] buf, uint32_t size)
+void processIncoming(*StanagBuf buf, uint32_t size)
 {
 	-- checksum check
 	if (!stanagChecksum(buf, size))
@@ -174,7 +174,7 @@ uint8_t requiredLOI(uint32_t messageType)
 	return 0;
 }
 
-void processOutgoing(*uint8_t[576] buf, uint32_t size)
+void processOutgoing(*StanagBuf buf, uint32_t size)
 {
 }
 

@@ -40,11 +40,15 @@ endif
                 $(PREFIX)/ivory-backend-c
 
 
+.PHONY: gen
+gen:
+	-cabal exec ghc LOI/LOI.hs
+	-./LOI/LOI
+
 .PHONY: clean
 clean:
 	-rm -rf output
-	-rm -f `find . -name '*.o'`
-	-rm -f `find . -name '*.hi'`
+	-rm -f LOI/LOI LOI/*.o LOI/*.hi Stanag/*.o Stanag/*.hi
 
 .PHONY: veryclean
 veryclean: clean

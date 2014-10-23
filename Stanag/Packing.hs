@@ -9,8 +9,8 @@ import Ivory.Language
 import Ivory.Stdlib.String
 import Ivory.Serialize
 
-type Idx = Ix 576
-type Buf = Array 576 (Stored Uint8)
+-- type StanagIdx = Ix 576
+type StanagBuf = Array 576 (Stored Uint8)
 
 packIxAdd :: ANat n => Uint32 -> Ix n -> Uint32
 packIxAdd ix0 ix1 = ix0 + twosComplementRep (fromIx ix1)
