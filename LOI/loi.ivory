@@ -4,7 +4,7 @@ include loiModule
 
 -- LOI implementation in Ivory
 
-stanag_BROADCAST_ID = -1;
+g_STANAG_BROADCAST_ID = -1;
 max_NUM_CUCS  = 6;
 g_CUCS_OFFSET = 42;
 g_TYPE_OFFSET = 14;
@@ -176,6 +176,49 @@ uint8_t requiredLOI(uint32_t messageType)
 
 void processOutgoing(*StanagBuf buf, uint32_t size)
 {
+	let cucsId = unpackInt32(buf, g_CUCS_OFFSET);
+	let msgType = unpackUint32(buf, g_TYPE_OFFSET);
+	let required = requiredLOI(msgType);
+
+	if ( cucsId == g_STANAG_BROADCAST_ID )
+	{
+		let checksum = unpackUint32(buf, size-4);
+
+		-- Scan the list of authorized CUCSs.
+		map ix
+		{ 
+			-- Check if the authorization for the target CUCS overlaps that required by the message.
+			let granted = (&mActiveCucs)@ix->V.loiGranted;
+			if ( ((&mActiveCucs)@ix->V.cucsId != 0) && ((required & granted) > 0) )
+			{
+				let newCucsID = (&mActiveCucs)@ix->V.cucsId;
+				alloc *newchecksum = checksum;
+				--for (int ii = 0; ii < 32; ii += 8)
+				--{
+				--	newchecksum -= (STANAG_BROADCAST_ID >> ii) & 0x0FF;  // remove old broadcast char
+				--	newchecksum += (cucsID >> ii) & 0x0FF;   // add new cucsID char
+				--}
+
+				packInt32(newCucsID, buf, g_CUCS_OFFSET);
+				packUint32(*newchecksum, buf, size - 4);
+
+				-- Send the message to the CUCS.
+				--mPrev->processOutgoing(buf, size);
+ 			}
+			else {}
+		}
+	}
+	else -- unique CUCS, find and check its authorization
+	{
+		map ix
+		{
+			let granted = (&mActiveCucs)@ix->V.loiGranted;
+			if (((&mActiveCucs)@ix->V.cucsId == cucsId) && ((required & granted) > 0 ))
+			{
+				-- mPrev->processOutgoing(buf, size);
+ 			} else {}
+		}
+	}
 }
 
 uint8_t generateAuthorized(int32_t cucsId)
