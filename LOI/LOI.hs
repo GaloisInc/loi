@@ -29,10 +29,10 @@ import Stanag.LOIMap
 
 [ivory|
 struct StationStatus {
- int32_t next;
+ int32_t next; -- eventually will point to next component for passing data
  bool nextValid;
  bool overriden;
- ix_t 6 authIdx;
+ int32_t authIdx; -- can be -1 for not valid
 }
 |]
 

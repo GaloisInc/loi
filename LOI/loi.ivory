@@ -223,7 +223,27 @@ void processOutgoing(*StanagBuf buf, uint32_t size)
 
 uint8_t generateAuthorized(int32_t cucsId)
 {
-	return 0;
+	-- everyone can get 2
+	alloc *authorized = loi_2;
+
+	-- check if cucs has or can get 3
+	map ii
+	{
+		-- there is a valid station at ii AND ( no current CUCS or the current CUCS is us )
+		if ((&mStations)@ii->nextValid  &&
+				(((&mStations)@ii->authIdx < 0)  || ((&mActiveCucs)@(toIx((&mStations)@ii->authIdx))->V.cucsId == cucsId)))
+		{
+			store authorized as *authorized | loi_3;
+		} else {}
+	}
+
+	-- check if vehicle has or can get 4/5
+	if (((&mVehicle)->authIdx < 0) || ((&mActiveCucs)@(toIx((&mVehicle)->authIdx))->V.cucsId == cucsId))
+	{
+		store authorized as *authorized | loi_4 | loi_5;
+	} else {}
+
+	return *authorized;
 }
 
 void requestLOI3(* struct CucsAuthorisationRequest request, int32_t responseIndex, int32_t stationIndex)
