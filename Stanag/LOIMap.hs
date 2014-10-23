@@ -9,7 +9,7 @@ import Ivory.Language
 [ivory|
 struct LOIMap {
  uint32_t msg;
- uint32_t req;
+ uint8_t req;
 }
 |]
 

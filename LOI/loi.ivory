@@ -4,17 +4,17 @@ include loiModule
 
 -- LOI implementation in Ivory
 
-int32_t stanag_BROADCAST_ID = -1;
+stanag_BROADCAST_ID = -1;
 max_NUM_CUCS  = 6;
 g_CUCS_OFFSET = 42;
 g_TYPE_OFFSET = 14;
-int32_t g_CUCS_AUTHORIZATION_REQUEST = 1;
-int32_t g_PAYLOADSTEERINGCOMMAND = 200;
-int32_t g_EOLASERPAYLOADCOMMAND = 201;
-int32_t g_PAYLOADCONFIGURATION = 300;
-int32_t g_EOIRCONFIGURATIONSTATE = 301;
-int32_t g_EOIRLASEROPERATINGSTATE = 302;
-int32_t g_FIELDCONFIGREQ = 1200;
+g_CUCS_AUTHORIZATION_REQUEST = 1;
+g_PAYLOADSTEERINGCOMMAND = 200;
+g_EOLASERPAYLOADCOMMAND = 201;
+g_PAYLOADCONFIGURATION = 300;
+g_EOIRCONFIGURATIONSTATE = 301;
+g_EOIRLASEROPERATINGSTATE = 302;
+g_FIELDCONFIGREQ = 1200;
 
 uint8_t loi_2 = 0x01;
 uint8_t loi_3 = 0x02;
@@ -78,7 +78,7 @@ void processIncoming(*uint8_t[576] buf, uint32_t size)
 	} else {}
 
 	let cucsId = unpackInt32(buf, g_CUCS_OFFSET);
-	let msgType = unpackInt32(buf, g_TYPE_OFFSET);
+	let msgType = unpackUint32(buf, g_TYPE_OFFSET);
 
 	if (msgType == g_CUCS_AUTHORIZATION_REQUEST)
 	{
@@ -133,7 +133,7 @@ void processIncoming(*uint8_t[576] buf, uint32_t size)
 }
 
 
-bool applyLoiMessageFilter( int32_t cucsId, int32_t msgType )
+bool applyLoiMessageFilter( int32_t cucsId, uint32_t msgType )
 {
     let idx = findResponse( cucsId );
 
@@ -164,8 +164,13 @@ void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
 {
 }
 
-uint8_t requiredLOI(int32_t messageType)
+uint8_t requiredLOI(uint32_t messageType)
 {
+	map ix {
+    	if ((&mLOIMap)@ix -> msg == messageType) {
+			return (&mLOIMap)@ix -> req;
+		} else {}
+	}
 	return 0;
 }
 

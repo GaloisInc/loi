@@ -40,11 +40,6 @@ endif
                 $(PREFIX)/ivory-backend-c
 
 
-generate:
-	cabal exec ghc LOI/LOI.hs
-	./LOI/LOI
-
-
 .PHONY: clean
 clean:
 	-rm -rf output
