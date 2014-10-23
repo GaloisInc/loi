@@ -26,87 +26,12 @@ uint32_t cucsAuthorisationRequestMsgNum() { return 1; }
 uint32_t cucsAuthorisationRequestLength() { return 35; }
 
 
-void cucsAuthorisationRequest_setmessageInstance(*struct CucsAuthorisationRequest msg, uint32_t val)
-{
-  store msg.messageInstance as val;
-}
-
-void cucsAuthorisationRequest_setmessageType(*struct CucsAuthorisationRequest msg, uint32_t val)
-{
-  store msg.messageType as val;
-}
-
-void cucsAuthorisationRequest_setmessageLength(*struct CucsAuthorisationRequest msg, int32_t val)
-{
-  store msg.messageLength as val;
-}
-
-void cucsAuthorisationRequest_setstreamId(*struct CucsAuthorisationRequest msg, int32_t val)
-{
-  store msg.streamId as val;
-}
-
-void cucsAuthorisationRequest_setpacketSequenceNumber(*struct CucsAuthorisationRequest msg, int32_t val)
-{
-  store msg.packetSequenceNumber as val;
-}
-
-void cucsAuthorisationRequest_settimeStamp(*struct CucsAuthorisationRequest msg, double val)
-{
-  store msg.timeStamp as val;
-}
-
-void cucsAuthorisationRequest_setvehicleId(*struct CucsAuthorisationRequest msg, int32_t val)
-{
-  store msg.vehicleId as val;
-}
-
-void cucsAuthorisationRequest_setcucsId(*struct CucsAuthorisationRequest msg, int32_t val)
-{
-  store msg.cucsId as val;
-}
-
-void cucsAuthorisationRequest_setvsmId(*struct CucsAuthorisationRequest msg, int32_t val)
-{
-  store msg.vsmId as val;
-}
-
-void cucsAuthorisationRequest_setdataLinkId(*struct CucsAuthorisationRequest msg, int32_t val)
-{
-  store msg.dataLinkId as val;
-}
-
-void cucsAuthorisationRequest_setvehicleType(*struct CucsAuthorisationRequest msg, uint16_t val)
-{
-  store msg.vehicleType as val;
-}
-
 void cucsAuthorisationRequest_setvehicleSubtype(*struct CucsAuthorisationRequest msg, uint16_t val)
 {
    -- add log calls here
    if (val < 0) { return; } else {}
    if (val > 32767) { return; } else {}
   store msg.vehicleSubtype as val;
-}
-
-void cucsAuthorisationRequest_setrequestedHandoverLoi(*struct CucsAuthorisationRequest msg, uint8_t val)
-{
-  store msg.requestedHandoverLoi as val;
-}
-
-void cucsAuthorisationRequest_setcontrolledStation(*struct CucsAuthorisationRequest msg, uint32_t val)
-{
-  store msg.controlledStation as val;
-}
-
-void cucsAuthorisationRequest_setcontrolledStationMode(*struct CucsAuthorisationRequest msg, uint8_t val)
-{
-  store msg.controlledStationMode as val;
-}
-
-void cucsAuthorisationRequest_setwaitForCoordination(*struct CucsAuthorisationRequest msg, uint8_t val)
-{
-  store msg.waitForCoordination as val;
 }
 
 void cucsAuthorisationRequest_unpack(*Buf buf, * struct CucsAuthorisationRequest msg)
