@@ -41,8 +41,9 @@ endif
 
 .PHONY: clean
 clean:
-	-rm -rf dist
-	-rm -rf *.o *.hi LOI
+	-rm -rf output
+	-rm -f `find . -name '*.o'`
+	-rm -f `find . -name '*.hi'`
 
 .PHONY: veryclean
 veryclean: clean

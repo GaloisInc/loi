@@ -2,7 +2,8 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
-module LOIMap where
+module Stanag.LOIMap where
+
 import Ivory.Language
 
 [ivory|

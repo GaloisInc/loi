@@ -3,12 +3,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module MessageAcknowledgement where
+module Stanag.MessageAcknowledgement where
 
 import Ivory.Language
 
-import Types
-import Packing
+import Stanag.Packing
 
-[ivoryFile|MessageAcknowledgement.ivory|]
-
+[ivoryFile|Stanag/MessageAcknowledgement.ivory|]

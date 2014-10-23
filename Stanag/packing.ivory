@@ -1,8 +1,8 @@
 -- # -*- mode: haskell -*-
 
-include typesModule
-
 type Index = uint32_t;
+string struct Stanag 33
+string struct Stanaglong 400
 
 ------------------------------------------------------------
 -- Packing
@@ -27,10 +27,10 @@ void packDouble(double v, *uint8_t[576] buf, Index ix) {
   $pack(toCArray(buf), ix, v);
 }
 
-void packString(* struct ivory_string_LOI loi_str, *uint8_t[576] buf, Index ix) {
-  len <- $istr_len(const(loi_str));
+void packStanagString(* struct ivory_string_Stanag str, *uint8_t[576] buf, Index ix, int32_t size) {
+  len <- $istr_len(const(str));
   upTo toIx(len) ix' {
-    let x = loi_str.stringDataL[ix'];
+    let x = str.stringDataL[ix'];
     $pack(toCArray(buf), $packIxAdd(ix, ix'), x);
   }
 }
@@ -68,13 +68,11 @@ double unpackDouble(*uint8_t[576] buf, Index ix) {
   return x;
 }
 
-void unpackString( * struct ivory_string_LOI loi_str
-                 , * uint8_t[576] buf
-                 , Index ix)
+void unpackStanagString( * struct ivory_string_Stanag str , * uint8_t[576] buf , Index ix, int32_t size)
 {
-  len <- $istr_len(const(loi_str));
+  len <- $istr_len(const(str));
   upTo toIx(len) ix' {
     x <- $unpack(const(toCArray(buf)), $packIxAdd(ix, ix'));
-    store (loi_str.stringDataL)@ix' as x;
+    store (str.stringDataL)@ix' as x;
   }
 }

@@ -21,14 +21,20 @@ import Ivory.Language
 import Ivory.Compile.C.CmdlineFrontend
 import Control.Monad
 
-import qualified MessageAcknowledgement   as M
-import qualified CucsAuthorisationRequest as C
-import qualified VsmAuthorizationResponse as V
-import Types
-import Packing
-import LOIMap
+import qualified Stanag.MessageAcknowledgement   as M
+import qualified Stanag.CucsAuthorisationRequest as C
+import qualified Stanag.VsmAuthorisationResponse as V
+import Stanag.Packing
+import Stanag.LOIMap
 
--- loi.ivory
+[ivory|
+struct StationStatus {
+ int32_t next;
+ bool nextValid;
+ bool overriden;
+ ix_t 6 authIdx;
+}
+|]
 
 mStations :: MemArea (Array 32 (Struct "StationStatus"))
 mStations = area "mStations" Nothing
@@ -37,28 +43,29 @@ mVehicle :: MemArea (Struct "StationStatus")
 mVehicle = area "mVehicle" Nothing
 
 -- Must be == max_NUM_CUCS
-mActiveCucs :: MemArea (Array 6 (Struct "VsmAuthorizationResponse"))
+mActiveCucs :: MemArea (Array 6 (Struct "VsmAuthorisationResponse"))
 mActiveCucs = area "mActiveCucs" (Just (iarray (replicate 6 response)))
   where
   response = istruct [V.cucsId .= ival 0]
 
-[ivoryFile|loi.ivory|]
+
+[ivoryFile|LOI/loi.ivory|]
 
 
 loiModule :: Module
 loiModule = package "loiModule" $ do
-   depend typesModule
-   depend packing
-   depend M.messageacknowledgement
-   depend C.cucsauthorisationrequest
-   depend V.vsmauthorizationresponse
-   depend loi
+   depend stanagpacking
+   depend M.stanagmessageacknowledgement
+   depend C.stanagcucsauthorisationrequest
+   depend V.stanagvsmauthorisationresponse
+   depend loiloi
    defMemArea mStations
    defMemArea mVehicle
    defMemArea mActiveCucs
+   defStruct (Proxy :: Proxy "StationStatus")
 
 allModules :: [Module]
-allModules = [ loi, packing, typesModule, loiModule, loiMapModule, M.messageacknowledgement, C.cucsauthorisationrequest, V.vsmauthorizationresponse ]
+allModules = [ loiloi, stanagpacking, loiModule, loiMapModule, M.stanagmessageacknowledgement, C.stanagcucsauthorisationrequest, V.stanagvsmauthorisationresponse ]
 
 
 main = void $ runCompiler allModules initialOpts { constFold = True, includeDir = "output", srcDir = "output"  }

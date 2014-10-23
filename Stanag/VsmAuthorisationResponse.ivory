@@ -1,0 +1,155 @@
+include stanagpacking
+
+struct VsmAuthorisationResponse
+{
+ struct ivory_string_Stanag idd;
+ uint32_t messageInstance;
+ uint32_t messageType;
+ int32_t messageLength;
+ int32_t streamId;
+ int32_t packetSequenceNumber;
+ double timeStamp;
+ int32_t vehicleId;
+ int32_t cucsId;
+ int32_t vsmId;
+ int32_t dataLinkId;
+ uint8_t loiAuthorized;
+ uint8_t loiGranted;
+ uint32_t controlledStation;
+ uint8_t controlledStationMode;
+ uint16_t vehicleType;
+ uint16_t vehicleSubtype;
+}
+
+
+uint32_t vsmAuthorisationResponseMsgNum() { return 21; }
+uint32_t vsmAuthorisationResponseLength() { return 35; }
+
+
+void vsmAuthorisationResponse_setmessageInstance(*struct VsmAuthorisationResponse msg, uint32_t val)
+{
+  store msg.messageInstance as val;
+}
+
+void vsmAuthorisationResponse_setmessageType(*struct VsmAuthorisationResponse msg, uint32_t val)
+{
+  store msg.messageType as val;
+}
+
+void vsmAuthorisationResponse_setmessageLength(*struct VsmAuthorisationResponse msg, int32_t val)
+{
+  store msg.messageLength as val;
+}
+
+void vsmAuthorisationResponse_setstreamId(*struct VsmAuthorisationResponse msg, int32_t val)
+{
+  store msg.streamId as val;
+}
+
+void vsmAuthorisationResponse_setpacketSequenceNumber(*struct VsmAuthorisationResponse msg, int32_t val)
+{
+  store msg.packetSequenceNumber as val;
+}
+
+void vsmAuthorisationResponse_settimeStamp(*struct VsmAuthorisationResponse msg, double val)
+{
+  store msg.timeStamp as val;
+}
+
+void vsmAuthorisationResponse_setvehicleId(*struct VsmAuthorisationResponse msg, int32_t val)
+{
+  store msg.vehicleId as val;
+}
+
+void vsmAuthorisationResponse_setcucsId(*struct VsmAuthorisationResponse msg, int32_t val)
+{
+  store msg.cucsId as val;
+}
+
+void vsmAuthorisationResponse_setvsmId(*struct VsmAuthorisationResponse msg, int32_t val)
+{
+  store msg.vsmId as val;
+}
+
+void vsmAuthorisationResponse_setdataLinkId(*struct VsmAuthorisationResponse msg, int32_t val)
+{
+  store msg.dataLinkId as val;
+}
+
+void vsmAuthorisationResponse_setloiAuthorized(*struct VsmAuthorisationResponse msg, uint8_t val)
+{
+  store msg.loiAuthorized as val;
+}
+
+void vsmAuthorisationResponse_setloiGranted(*struct VsmAuthorisationResponse msg, uint8_t val)
+{
+  store msg.loiGranted as val;
+}
+
+void vsmAuthorisationResponse_setcontrolledStation(*struct VsmAuthorisationResponse msg, uint32_t val)
+{
+  store msg.controlledStation as val;
+}
+
+void vsmAuthorisationResponse_setcontrolledStationMode(*struct VsmAuthorisationResponse msg, uint8_t val)
+{
+  store msg.controlledStationMode as val;
+}
+
+void vsmAuthorisationResponse_setvehicleType(*struct VsmAuthorisationResponse msg, uint16_t val)
+{
+  store msg.vehicleType as val;
+}
+
+void vsmAuthorisationResponse_setvehicleSubtype(*struct VsmAuthorisationResponse msg, uint16_t val)
+{
+   -- add log calls here
+   if (val < 0) { return; } else {}
+   if (val > 65535) { return; } else {}
+  store msg.vehicleSubtype as val;
+}
+
+void vsmAuthorisationResponse_unpack(*Buf buf, * struct VsmAuthorisationResponse msg)
+{
+  unpackStanagString(msg.idd, buf, 0, 10);
+  store msg.messageInstance as unpackUint32(buf, 10);
+  store msg.messageType as unpackUint32(buf, 14);
+  store msg.messageLength as unpackInt32(buf, 18);
+  store msg.streamId as unpackInt32(buf, 22);
+  store msg.packetSequenceNumber as unpackInt32(buf, 26);
+  store msg.timeStamp as unpackDouble(buf, 30);
+  store msg.vehicleId as unpackInt32(buf, 38);
+  store msg.cucsId as unpackInt32(buf, 42);
+  store msg.vsmId as unpackInt32(buf, 46);
+  store msg.dataLinkId as unpackInt32(buf, 50);
+  store msg.loiAuthorized as unpackUint8(buf, 54);
+  store msg.loiGranted as unpackUint8(buf, 55);
+  store msg.controlledStation as unpackUint32(buf, 56);
+  store msg.controlledStationMode as unpackUint8(buf, 60);
+  store msg.vehicleType as unpackUint16(buf, 61);
+  store msg.vehicleSubtype as unpackUint16(buf, 63);
+}
+
+
+void vsmAuthorisationResponse_pack(* struct VsmAuthorisationResponse msg, *Buf buf)
+{
+  packStanagString(msg.idd, buf, 0, 10);
+  packUint32(msg->messageInstance, buf, 10);
+  packUint32(msg->messageType, buf, 14);
+  packInt32(msg->messageLength, buf, 18);
+  packInt32(msg->streamId, buf, 22);
+  packInt32(msg->packetSequenceNumber, buf, 26);
+  packDouble(msg->timeStamp, buf, 30);
+  packInt32(msg->vehicleId, buf, 38);
+  packInt32(msg->cucsId, buf, 42);
+  packInt32(msg->vsmId, buf, 46);
+  packInt32(msg->dataLinkId, buf, 50);
+  packUint8(msg->loiAuthorized, buf, 54);
+  packUint8(msg->loiGranted, buf, 55);
+  packUint32(msg->controlledStation, buf, 56);
+  packUint8(msg->controlledStationMode, buf, 60);
+  packUint16(msg->vehicleType, buf, 61);
+  packUint16(msg->vehicleSubtype, buf, 63);
+}
+
+

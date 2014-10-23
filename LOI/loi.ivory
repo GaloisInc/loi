@@ -85,8 +85,8 @@ void processIncoming(*uint8_t[576] buf, uint32_t size)
 		-- alloc *struct CucsAuthorisationRequest msg;
 		-- cucsAuthorisationRequest_unpack(buf, msg);
 
-		-- handleStanagCucsAuthorizationRequest(msg);
-		-- AckAuthorizationRequest(msg);
+		-- handleStanagCucsAuthorisationRequest(msg);
+		-- AckAuthorisationRequest(msg);
 		return;
 	} else {}
 
@@ -156,11 +156,11 @@ bool applyLoiMessageFilter( int32_t cucsId, int32_t msgType )
 	return false;
 }
 
-void ackAuthorizationRequest( * struct CucsAuthorisationRequest msg )
+void ackAuthorisationRequest( * struct CucsAuthorisationRequest msg )
 {
 }
 
-void sendAuthorizationResponse( * struct VsmAuthorizationResponse msg )
+void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
 {
 }
 
@@ -194,7 +194,7 @@ void requestLOI(* struct CucsAuthorisationRequest request, int32_t responseIdx)
 {
 }
 
-void handleStanagCucsAuthorizationRequest(* struct CucsAuthorisationRequest request)
+void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest request)
 {
 }
 

@@ -3,11 +3,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module CucsAuthorisationRequest where
+module Stanag.VsmAuthorisationResponse where
 
 import Ivory.Language
 
-import Types
-import Packing
+import Stanag.Packing
 
-[ivoryFile|CucsAuthorisationRequest.ivory|]
+[ivoryFile|Stanag/VsmAuthorisationResponse.ivory|]
