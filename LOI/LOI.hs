@@ -36,13 +36,16 @@ struct StationStatus {
 }
 |]
 
+
+type StationIdx = Ix 32
 mStations :: MemArea (Array 32 (Struct "StationStatus"))
 mStations = area "mStations" Nothing
 
 mVehicle :: MemArea (Struct "StationStatus")
 mVehicle = area "mVehicle" Nothing
 
--- Must be == max_NUM_CUCS
+-- this size determines max number of CUCS that can be active
+type CucsIdx = Ix 6
 mActiveCucs :: MemArea (Array 6 (Struct "VsmAuthorisationResponse"))
 mActiveCucs = area "mActiveCucs" (Just (iarray (replicate 6 response)))
   where

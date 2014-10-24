@@ -5,12 +5,12 @@ include loiModule
 -- LOI implementation in Ivory
 
 g_STANAG_BROADCAST_ID = -1;
+g_RELINQUISH_CONTROL = 0;
 g_TAKE_CONTROL = 1;
 g_RELINQUISH_HANDOFF_CONTROL = 0;
 g_REQUEST_CONTROL = 1;
 g_OVERRIDE_CONTROL = 2;
 
-max_NUM_CUCS  = 6;
 g_CUCS_OFFSET = 42;
 g_TYPE_OFFSET = 14;
 g_CUCS_AUTHORIZATION_REQUEST = 1;
@@ -21,10 +21,10 @@ g_EOIRCONFIGURATIONSTATE = 301;
 g_EOIRLASEROPERATINGSTATE = 302;
 g_FIELDCONFIGREQ = 1200;
 
-uint8_t loi_2 = 0x01;
-uint8_t loi_3 = 0x02;
-uint8_t loi_4 = 0x04;
-uint8_t loi_5 = 0x08;
+loi_2 = 0x01;
+loi_3 = 0x02;
+loi_4 = 0x04;
+loi_5 = 0x08;
 
 --------------------------------------------------------------------------------
 -- XXX Made up definitions for now
@@ -220,8 +220,8 @@ void processOutgoing(*StanagBuf buf, uint32_t size)
 				alloc *newchecksum = checksum;
 				--for (int ii = 0; ii < 32; ii += 8)
 				--{
-				--	newchecksum -= (STANAG_BROADCAST_ID >> ii) & 0x0FF;  // remove old broadcast char
-				--	newchecksum += (cucsID >> ii) & 0x0FF;   // add new cucsID char
+				--	newchecksum -= (STANAG_BROADCAST_ID >> ii) & 0x0FF;  -- remove old broadcast char
+				--	newchecksum += (cucsID >> ii) & 0x0FF;   -- add new cucsID char
 				--}
 
 				packInt32(newCucsID, buf, g_CUCS_OFFSET);
@@ -271,20 +271,145 @@ uint8_t generateAuthorized(int32_t cucsId)
 	return *authorized;
 }
 
-void requestLOI3(* struct CucsAuthorisationRequest request, int32_t responseIndex, int32_t stationIndex)
+void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseIndex, StationIdx stationIndex)
 {
 }
 
-void requestLOI45(* struct CucsAuthorisationRequest request, int32_t responseIndex, int32_t requestedLOI)
+void requestLOI45(* struct CucsAuthorisationRequest request, CucsIdx responseIndex, uint8_t requestedLOI)
 {
 }
 
-void dropLOI(* struct CucsAuthorisationRequest request, int32_t responseIdx)
+void dropLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 {
+	let cur = (&mActiveCucs)@responseIdx;
+	let prevgranted = cur->V.loiGranted;
+	store cur.V.loiAuthorized as 0;
+
+	--The Requested LOI is applicable to this request as it defines the functionality being released,
+	--LOI 4/5 is for the air vehicle and LOI 3 is for the payload at the Controlled Station.
+	--The CUCS inserts the Controlled Station Mode as Relinquish Control.
+
+	-- LOG.notice("LOI: CUCS 0x%08X attempting to relinquish LOI 0x%X", request->getCucsId(), request->GetRequestedLoi());
+
+	if ((&mVehicle)->authIdx == safeCast(responseIdx)) -- compare as ints as we want to keep -1 if there
+	{
+		if (((safeCast(request->C.requestedHandoverLoi) & loi_5) > 0) && ((prevgranted & loi_5) > 0)) {
+			store cur.V.loiGranted as safeCast(cur->V.loiGranted) & ~loi_5;
+		} else {}
+
+		if (((safeCast(request->C.requestedHandoverLoi) & loi_4) > 0) && ((prevgranted & loi_4) > 0)) {
+			store cur.V.loiGranted as safeCast(cur->V.loiGranted) & ~loi_4;
+		} else {}
+
+		if ((safeCast(cur->V.loiGranted) & (loi_4|loi_5)) == 0)
+		{
+			store (&mVehicle).authIdx as -1;
+			store (&mVehicle).overriden as false;
+		} else {}
+	} else {}
+
+	if (((safeCast(request->C.requestedHandoverLoi) & loi_3) > 0) && ((prevgranted & loi_3) > 0))
+	{
+		let stations = request->C.controlledStation;
+		map ii
+		{	-- match this station bit and station is present and we are the controlling CUCS, note authIdx can be < 0
+			if (((stations & (1 << safeCast(ii))) > 0) && (&mStations)@ii->nextValid && ((&mStations)@ii->authIdx == safeCast(responseIdx)))
+			{
+				store cur.V.controlledStation as safeCast(cur->V.controlledStation) & ~(1<<safeCast(ii));
+				if ( cur->V.controlledStation == 0 ) {
+					store cur.V.loiGranted as safeCast(cur->V.loiGranted) & ~loi_3;
+				} else {}
+				store (&mStations)@ii.authIdx as -1;
+				store (&mStations)@ii.overriden as false;
+				store cur.V.loiAuthorized as cur->V.loiAuthorized | loi_3;
+			} else {}
+		}
+	} else {}
+
+	if (((safeCast(request->C.requestedHandoverLoi) & loi_2) > 0) && ((prevgranted & loi_2) > 0))
+	{
+		store cur.V.loiGranted as safeCast(cur->V.loiGranted) & ~loi_2;
+	} else {}
+
+	if ( cur->V.loiGranted == 0 )
+	{
+		-- 'remove' the response from the list of active cucs
+		-- LOG.notice("LOI: CUCS 0x%08X removed from authorized list", cur->getCucsId());
+		store cur.V.cucsId as 0;
+	} else {}
+
+	-- Respond with the LOIs/stations relinquished.
+	alloc authResp;
+	memcpy authResp cur;
+	store authResp.V.loiGranted as request->C.requestedHandoverLoi;
+	if ((safeCast(request->C.requestedHandoverLoi) & loi_3) > 0) {
+		store authResp.V.controlledStation as request->C.controlledStation;
+	} else {
+		store authResp.V.controlledStation as 0;
+	}
+	store authResp.V.controlledStationMode as g_RELINQUISH_CONTROL;
+	sendAuthorisationResponse( authResp );
+
+	if ( prevgranted != cur->V.loiGranted )
+	{
+		-- Indicate the LOIs relinquished as a result of this request.
+		--let relinquished = prevgranted & (prevgranted ^ cur->getLOI_Granted());
+		--LOG.notice("LOI: CUCS 0x%08X relinquished LOI 0x%X", cur->getCucsId(), relinquished);
+		--LOG.notice("LOI: CUCS 0x%08X has LOI 0x%X", cur->getCucsId(), cur->getLOI_Granted());
+	} else {}
 }
 
-void requestLOI(* struct CucsAuthorisationRequest request, int32_t responseIdx)
+void requestLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 {
+	let cur = (&mActiveCucs)@responseIdx;
+	let prevgranted = cur->V.loiGranted;
+	store cur.V.loiAuthorized as 0;
+
+	--LOG.notice("LOI: CUCS 0x%08X requesting LOI 0x%X", request->getCucsId(), request->GetRequestedLoi());
+
+	-- determine if CUCS wants to monitor this VSM
+	if (((safeCast(request->C.requestedHandoverLoi) & loi_2) > 0) && ((safeCast(prevgranted) & loi_2) == 0))
+	{
+		store cur.V.loiGranted as loi_2;
+		-- LOG.notice("LOI: CUCS 0x%08X granted LOI2", cur->getCucsId());
+	} else {}
+
+	-- determine if CUCS wants any payload control
+	if ((safeCast(request->C.requestedHandoverLoi) & loi_3) > 0)
+	{
+		let stations = request->C.controlledStation;
+		map ii
+		{	-- match this station bit and station is present
+			if (((stations & (1 << safeCast(ii))) > 0) && (&mStations)@ii->nextValid)
+			{
+				requestLOI3(request, responseIdx, ii);
+			} else {}  
+		}
+	} else {}
+
+	-- determine if CUCS wants AV control
+	if ((safeCast(request->C.requestedHandoverLoi) & loi_4) > 0)
+	{
+		requestLOI45(request, responseIdx, loi_4);
+	} else {}
+
+	-- determine if CUCS wants AV and recovery control
+	if ((safeCast(request->C.requestedHandoverLoi) & loi_5) > 0)
+	{
+		requestLOI45(request, responseIdx, loi_5);
+	} else {}
+
+	-- Respond with the overall LOIs/stations granted.
+	store cur.V.controlledStationMode as g_TAKE_CONTROL;
+	sendAuthorisationResponse( cur );
+
+	if ( prevgranted != cur->V.loiGranted )
+	{
+		-- Indicate the LOIs granted/authorized as a result of this request.
+		--let granted = cur->V.loiGranted & (cur->V.loiGranted ^ prevgranted);
+		--LOG.notice("LOI: CUCS 0x%08X granted LOI 0x%X", cur->getCucsId(), granted);
+		--LOG.notice("LOI: CUCS 0x%08X has LOI 0x%X", cur->getCucsId(), cur->getLOI_Granted());
+	} else {}
 }
 
 void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest request)
@@ -332,9 +457,9 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 	else -- Message was sent directly to this VSM.
 	{
 		-- only let custom CUCS use OVERRIDE, ULB specific behaviour
---		if (( g_OVERRIDE_CONTROL == request->C.controlledStationMode ) && ( (0x00800000 & request->C.cucsId) == 0 )) {
---				store request.C.controlledStationMode as g_REQUEST_CONTROL;
---		} else {}
+		if (( g_OVERRIDE_CONTROL == request->C.controlledStationMode ) && ( (0x00800000 & twosCompRep(request->C.cucsId)) == 0 )) {
+				store request.C.controlledStationMode as g_REQUEST_CONTROL;
+		} else {}
 
 		-- if CUCS isn't registered with us yet and they are requesting something, create an entry for them
 		alloc *responseIdx = findResponse(cucsId);
@@ -365,13 +490,14 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 
 		-- Resolve the authorization request.
 		if (g_RELINQUISH_HANDOFF_CONTROL == request->C.controlledStationMode) {
-			dropLOI(request, *responseIdx);
+			dropLOI(request, toIx(*responseIdx));
 		} else {
-			requestLOI(request, *responseIdx);
+			requestLOI(request, toIx(*responseIdx));
 		}
 
 		if ( request->C.requestedHandoverLoi > 0 )
 		{
+			-- bwilson, yes, this is a second response, why?
 			-- If CUCS is authorized to some level, respond with authorized LOIs/stations.
 			alloc authResp;
 --			memcpy mActiveCucs@responseIdx authResp;
