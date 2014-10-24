@@ -5,6 +5,11 @@ include loiModule
 -- LOI implementation in Ivory
 
 g_STANAG_BROADCAST_ID = -1;
+g_TAKE_CONTROL = 1;
+g_RELINQUISH_HANDOFF_CONTROL = 0;
+g_REQUEST_CONTROL = 1;
+g_OVERRIDE_CONTROL = 2;
+
 max_NUM_CUCS  = 6;
 g_CUCS_OFFSET = 42;
 g_TYPE_OFFSET = 14;
@@ -27,6 +32,7 @@ uint8_t loi_5 = 0x08;
 -- Startup config values
 mVehicleType    = 0;
 mVehicleSubType = 0;
+mVehicleId = 0;
 
 --------------------------------------------------------------------------------
 
@@ -82,17 +88,16 @@ void processIncoming(*StanagBuf buf, uint32_t size)
 
 	if (msgType == g_CUCS_AUTHORIZATION_REQUEST)
 	{
-		-- alloc *struct CucsAuthorisationRequest msg;
-		-- cucsAuthorisationRequest_unpack(buf, msg);
-
-		-- handleStanagCucsAuthorisationRequest(msg);
-		-- AckAuthorisationRequest(msg);
+		alloc msg;
+		C.cucsAuthorisationRequest_unpack(buf, msg);
+		handleStanagCucsAuthorisationRequest(msg);
+		ackAuthorisationRequest(msg);
 		return;
 	} else {}
 
 	if (applyLoiMessageFilter(cucsId, msgType))
 	{
-		let int32_t z = 0;
+		let uint32_t z = 0;
 		alloc *offset = z;
 
 		-- covert switch statement
@@ -114,14 +119,14 @@ void processIncoming(*StanagBuf buf, uint32_t size)
 		-- station message, figure out where to deliver it and do so (if there is a station present)
 		if (*offset > 0)
 		{
---			let stationbits = unpackUint32(buf, g_CUCS_OFFSET + *offset);
---			for (int ii = 0; ii < 32; ii++)
---			{
---				if ((((1 << ii) & stationbits) > 0) && (mStations[ii].nextvalid))
---				{
---					mStations[ii].next->processIncoming(buf, size);
---				}
---			}
+			let stationbits = unpackUint32(buf, (g_CUCS_OFFSET + *offset));
+			map ii 
+			{	-- TODO: how to do bit manip and masking, this one gets pruned
+				if ((((1 << safeCast(ii)) & stationbits) > 0) && ((&mStations)@ii->nextValid))
+				{
+					--mStations[ii].next->processIncoming(buf, size);
+				} else {}
+			}
 		}
 		-- otherwise, this goes to the vehicle for processing
 		else
@@ -158,10 +163,30 @@ bool applyLoiMessageFilter( int32_t cucsId, uint32_t msgType )
 
 void ackAuthorisationRequest( * struct CucsAuthorisationRequest msg )
 {
+	alloc ack;
+--	alloc buf;
+
+	store ack.M.originalMessageTimeStamp as msg->C.timeStamp;
+	store ack.M.originalMessageInstanceId as msg->C.messageInstance;
+	store ack.M.originalMessageType as msg->C.messageType;
+	store ack.M.cucsId as msg->C.cucsId;
+--	store ack->M.timeStamp as now(); -- double timestamp
+	store ack.M.vehicleId as mVehicleId;
+	store ack.M.vsmId as mVehicleId;  -- TODO: readin/store vsm id
+
+--	M.messageAcknowledgement_pack(ack, buf);
+--	mPrev->processOutgoing(buf, messageAcknowledgementLength());
 }
 
 void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
 {
+--	alloc buf;
+--	store msg->V.timeStamp as now(); -- double timestamp
+	store msg.V.vehicleId as mVehicleId;
+	store msg.V.vsmId as mVehicleId;  -- TODO: readin/store vsm id
+
+--	V.vsmAuthorisationResponse_pack(msg, buf);
+--	mPrev->processOutgoing(buf, vsmAuthorisationResponseLength());
 }
 
 uint8_t requiredLOI(uint32_t messageType)
@@ -264,5 +289,96 @@ void requestLOI(* struct CucsAuthorisationRequest request, int32_t responseIdx)
 
 void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest request)
 {
+	let cucsId = request->C.cucsId;
+	if ((cucsId == 0) || (cucsId == g_STANAG_BROADCAST_ID)) {
+		return;
+	} else {}
+
+	-- Check for a broadcast message
+	if (g_STANAG_BROADCAST_ID == request->C.vehicleId)
+	{
+		alloc authResp;
+		let responseIdx = findResponse(cucsId);
+
+		if (responseIdx < 0)
+		{
+			store authResp.V.cucsId as cucsId;
+			store authResp.V.vehicleType as mVehicleType;
+			store authResp.V.vehicleSubtype as mVehicleSubType;
+			store authResp.V.loiGranted as 0;
+			store authResp.V.loiAuthorized as 0;
+			store authResp.V.controlledStation as 0;
+		}
+		else
+		{
+--			memcpy mActiveCucs@responseIdx authResp;
+		}
+
+		store authResp.V.loiAuthorized as generateAuthorized(authResp->V.cucsId);
+
+		if (authResp->V.loiAuthorized != 0)
+		{
+			-- If CUCS is authorized to some level, respond with authorized LOIs/stations.
+			store authResp.V.loiGranted as 0;
+			store authResp.V.controlledStationMode as g_TAKE_CONTROL;
+			sendAuthorisationResponse( authResp );
+			--LOG.notice("LOI: CUCS 0x%08X is authorized for 0x%X", authResp.getCucsId(), authResp.getLOI_Authorized());
+		}
+		else
+		{
+			--LOG.notice("LOI: CUCS 0x%08X is not authorized on any level", authResp.getCucsId());
+		}
+	}
+	else -- Message was sent directly to this VSM.
+	{
+		-- only let custom CUCS use OVERRIDE, ULB specific behaviour
+--		if (( g_OVERRIDE_CONTROL == request->C.controlledStationMode ) && ( (0x00800000 & request->C.cucsId) == 0 )) {
+--				store request->C.controlledStationMode as g_REQUEST_CONTROL;
+--		} else {}
+
+		-- if CUCS isn't registered with us yet and they are requesting something, create an entry for them
+		alloc *responseIdx = findResponse(cucsId);
+		if ((*responseIdx < 0) && (request->C.requestedHandoverLoi != 0))
+		{
+			store responseIdx as findResponse(0); -- first blank spot
+			if (*responseIdx < 0)
+			{
+				--LOG.notice("LOI: CUCS list is FULL, ignoring requests");
+				--SetStatusAlert(PRIORITY_NOMINAL,SUBSYS_VSM_STATUS,STATUS_CLEARABLE,VSM_NOMINAL_CUCS_TABLE_FULL,VSM_NOMINAL_CUCS_TABLE_FULL_TEXT,10);
+				return;
+			} else {}
+
+	        -- memset(mActiveCucs@responseIdx, 0, sizeof(StanagVsmAuthorizationResponse));
+			let idx = toIx(*responseIdx);
+
+			store (&mActiveCucs)@idx.V.cucsId as request->C.cucsId;
+			store (&mActiveCucs)@idx.V.vehicleType as mVehicleType;
+			store (&mActiveCucs)@idx.V.vehicleSubtype as mVehicleSubType;
+			store (&mActiveCucs)@idx.V.loiGranted as 0;
+			store (&mActiveCucs)@idx.V.loiAuthorized as 0;
+			store (&mActiveCucs)@idx.V.controlledStation as 0;
+			-- LOG.notice("LOI: CUCS 0x%08X added to authorized list", request->getCucsId());
+		} else {}
+
+		let idx = toIx(*responseIdx);
+		store (&mActiveCucs)@idx.V.loiAuthorized as generateAuthorized((&mActiveCucs)@idx->V.cucsId);
+
+		-- Resolve the authorization request.
+		if (g_RELINQUISH_HANDOFF_CONTROL == request->C.controlledStationMode) {
+			dropLOI(request, *responseIdx);
+		} else {
+			requestLOI(request, *responseIdx);
+		}
+
+		if ( request->C.requestedHandoverLoi > 0 )
+		{
+			-- If CUCS is authorized to some level, respond with authorized LOIs/stations.
+			alloc authResp;
+--			memcpy mActiveCucs@responseIdx authResp;
+			store authResp.V.loiGranted as 0;
+			sendAuthorisationResponse( authResp );
+			--LOG.notice("LOI: CUCS 0x%08X is authorized to LOI 0x%X", authResp.getCucsId(), authResp.getLOI_Granted());
+		} else {}
+	}
 }
 
