@@ -333,7 +333,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 	{
 		-- only let custom CUCS use OVERRIDE, ULB specific behaviour
 --		if (( g_OVERRIDE_CONTROL == request->C.controlledStationMode ) && ( (0x00800000 & request->C.cucsId) == 0 )) {
---				store request->C.controlledStationMode as g_REQUEST_CONTROL;
+--				store request.C.controlledStationMode as g_REQUEST_CONTROL;
 --		} else {}
 
 		-- if CUCS isn't registered with us yet and they are requesting something, create an entry for them
