@@ -30,7 +30,7 @@ loi_5 = 0x08;
 -- XXX Made up definitions for now
 
 -- Startup config values
-mVehicleType    = 0;
+mVehicleType	= 0;
 mVehicleSubType = 0;
 mVehicleId = 0;
 
@@ -38,9 +38,9 @@ mVehicleId = 0;
 
 int32_t findResponse(int32_t cucsID) {
   map ix {
-    if ((&mActiveCucs)@ix -> V.cucsId == cucsID) {
+	if ((&mActiveCucs)@ix -> V.cucsId == cucsID) {
 	  return safeCast(ix);
-    } else {}
+	} else {}
   }
   return -1;
 }
@@ -50,9 +50,9 @@ int32_t getActiveCUCSCount()
 {
   alloc *cnt = 0;
   map ix {
-    if ((&mActiveCucs)@ix -> V.cucsId != 0) {
-      store cnt as *cnt + 1;
-    } else {}
+	if ((&mActiveCucs)@ix -> V.cucsId != 0) {
+	  store cnt as *cnt + 1;
+	} else {}
   }
   return *cnt;
 }
@@ -60,17 +60,17 @@ int32_t getActiveCUCSCount()
 
 bool stanagChecksum(*StanagBuf buf, uint32_t len)
 {
-    let bound = len - 4;
+	let bound = len - 4;
 	let tomatch = unpackUint32(buf, bound);
-    alloc *check = 0;
+	alloc *check = 0;
  
-    let ix_t 576 boundIx = toIx(twosCompCast(bound));
-    upTo boundIx ix {
-        let uint32_t data = safeCast(buf[ix]);
-        store check as *check + data;
-    }
+	let ix_t 576 boundIx = toIx(twosCompCast(bound));
+	upTo boundIx ix {
+		let uint32_t data = safeCast(buf[ix]);
+		store check as *check + data;
+	}
 
-    return (*check == tomatch);
+	return (*check == tomatch);
 }
 
 
@@ -79,7 +79,7 @@ void processIncoming(*StanagBuf buf, uint32_t size)
 	-- checksum check
 	if (!stanagChecksum(buf, size))
 	{
-        -- LOG.notice("LOI : message from CUCS 0x%08X failed checksum", cucsId);
+		-- LOG.notice("LOI : message from CUCS 0x%08X failed checksum", cucsId);
 		return;
 	} else {}
 
@@ -140,11 +140,11 @@ void processIncoming(*StanagBuf buf, uint32_t size)
 
 bool applyLoiMessageFilter( int32_t cucsId, uint32_t msgType )
 {
-    let idx = findResponse( cucsId );
+	let idx = findResponse( cucsId );
 
-    if (idx >= 0)  -- valid response
+	if (idx >= 0)  -- valid response
 	{
-    	--  Check if the LOI granted to the CUCS overlaps the minimum LOI required by the message.
+		--  Check if the LOI granted to the CUCS overlaps the minimum LOI required by the message.
 		let granted = (&mActiveCucs)@toIx(idx)->V.loiGranted;
 		let required = requiredLOI(msgType);
 		if ( (required & granted) > 0) {
@@ -192,7 +192,7 @@ void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
 uint8_t requiredLOI(uint32_t messageType)
 {
 	map ix {
-    	if ((&mLOIMap)@ix -> msg == messageType) {
+		if ((&mLOIMap)@ix -> msg == messageType) {
 			return (&mLOIMap)@ix -> req;
 		} else {}
 	}
@@ -273,11 +273,118 @@ uint8_t generateAuthorized(int32_t cucsId)
 
 void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseIndex, StationIdx stationIndex)
 {
+	alloc *update = false;
+	let authIdx = (&mStations)@stationIndex->authIdx;
+
+	-- noone has control or we already have control
+	if ((authIdx < 0) || (request->C.cucsId == (&mActiveCucs)@toIx(authIdx)->V.cucsId))
+	{
+		-- allows a new CUCS to obtain control or the controlling CUCS to change between override and request mode
+		store (&mStations)@stationIndex.overriden as (request->C.controlledStationMode == g_OVERRIDE_CONTROL);
+		if ( authIdx < 0 ) {
+			store update as true;
+		} else {}
+	}
+	else
+	{
+		-- can we override another CUCS control?
+		let resp = (&mActiveCucs)@toIx(authIdx);
+
+		if ((g_OVERRIDE_CONTROL == request->C.controlledStationMode) && !(&mStations)@stationIndex->overriden)
+		{
+			store (&mStations)@stationIndex.overriden as true;
+			store update as true;
+
+			-- Clear the station entry for this CUCS.
+			store resp.V.controlledStation as ( safeCast(resp->V.controlledStation) & ~(1 << safeCast(stationIndex)));
+
+			if ( resp->V.controlledStation == 0)
+			{
+				-- If this CUCS is no longer in control of any stations, revoke LOI 3.
+				store resp.V.loiGranted as ( safeCast(resp->V.loiGranted) & ~loi_3 );
+				-- LOG.notice("LOI: CUCS 0x%08X controls no longer controls any stations", resp->getCucsId() );
+			} else {}
+
+			store resp.V.loiAuthorized as 0;
+			store resp.V.controlledStationMode as g_RELINQUISH_CONTROL;
+
+			-- Notify former CUCS it has lost control of this station.
+			alloc authResp;
+			memcpy authResp resp;
+			store authResp.V.loiGranted as loi_3;
+			store authResp.V.controlledStation as (1 << safeCast(stationIndex));
+			store authResp.V.controlledStationMode as g_RELINQUISH_CONTROL;
+			sendAuthorisationResponse( authResp );
+
+			--LOG.notice("LOI: CUCS 0x%08X snatched LOI 3 Station #%d from CUCS 0x%08X", mActiveCucs[responseIndex].getCucsId(), stationIndex+1, resp->getCucsId());
+		} else {}
+	}
+
+	if (*update)
+	{
+		-- remember the CUCS in control of this station
+--		store (&mStations)@stationIndex.authIdx as responseIndex;
+		let resp = (&mActiveCucs)@responseIndex;
+		store resp.V.loiGranted as ( resp->V.loiGranted | loi_3 );
+		store resp.V.controlledStation as ( resp->V.controlledStation | (1 << safeCast(stationIndex)));
+
+		-- LOG.notice("LOI: CUCS 0x%08X controls Station #%d", resp->getCucsId(), stationIndex+1);
+	} else {}
 }
+
 
 void requestLOI45(* struct CucsAuthorisationRequest request, CucsIdx responseIndex, uint8_t requestedLOI)
 {
+	let cur = (&mActiveCucs)@responseIndex;
+
+	-- noone has control
+	if ((&mVehicle)->authIdx < 0)
+	{
+		store (&mVehicle).authIdx as safeCast(responseIndex);
+		store (&mVehicle).overriden as (g_OVERRIDE_CONTROL == request->C.controlledStationMode);
+		store cur.V.loiGranted as cur->V.loiGranted | requestedLOI;
+		return;
+	}
+	else {}
+
+	-- we already have some control, possibly changing
+	if ((&mVehicle)->authIdx == safeCast(responseIndex))
+	{
+		if (cur->V.loiGranted != requestedLOI) {
+			store cur.V.loiGranted as safeCast(cur->V.loiGranted) & ~(loi_4|loi_5);
+		} else {}
+		--LOG.notice("LOI: CUCS 0x%08X changed LOI45, now at 0x%X", cur->getCucsId(), requestedLOI);
+		store (&mVehicle).overriden as (g_OVERRIDE_CONTROL == request->C.controlledStationMode);
+		store cur.V.loiGranted as cur->V.loiGranted | requestedLOI;
+		return;
+	} else {}
+
+	-- a cucs has control, can the requesting cucs override?
+	if ((request->C.controlledStationMode == g_OVERRIDE_CONTROL) && !(&mVehicle)->overriden)
+	{
+		store (&mVehicle).overriden as true;
+
+		-- Update the authorization table entry for the CUCS which was overridden.
+		store cur.V.loiAuthorized as 0;
+		store cur.V.loiGranted as (safeCast(cur->V.loiGranted) & ~requestedLOI);
+		store cur.V.controlledStationMode as g_RELINQUISH_CONTROL;
+
+		-- notify former CUCS in control of loss of LOI 4
+		alloc authResp;
+		memcpy authResp cur;
+		store authResp.V.loiGranted as requestedLOI;
+		store authResp.V.controlledStation as 0;
+		store authResp.V.controlledStationMode as g_RELINQUISH_CONTROL;
+		sendAuthorisationResponse( authResp );
+
+		-- LOG.notice("LOI: CUCS 0x%08X snatched LOI45 from CUCS 0x%08X", mActiveCucs[responseIndex].getCucsId(), cur->getCucsId());
+
+		-- remember who has control of this AV
+		store (&mVehicle).authIdx as safeCast(responseIndex);
+		store (&mActiveCucs)@responseIndex.V.loiGranted as (&mActiveCucs)@responseIndex->V.loiGranted | requestedLOI;
+	} else {}
 }
+
 
 void dropLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 {
@@ -473,7 +580,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 				return;
 			} else {}
 
-	        -- memset(mActiveCucs@responseIdx, 0, sizeof(StanagVsmAuthorizationResponse));
+			-- memset(mActiveCucs@responseIdx, 0, sizeof(StanagVsmAuthorizationResponse));
 			let idx = toIx(*responseIdx);
 
 			store (&mActiveCucs)@idx.V.cucsId as request->C.cucsId;
