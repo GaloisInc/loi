@@ -1,6 +1,10 @@
 -- # -*- mode: haskell -*-
 
 include loiModule
+include loiMapModule
+include C.stanagcucsauthorisationrequest
+include V.stanagvsmauthorisationresponse
+include M.stanagmessageacknowledgement
 
 -- LOI implementation in Ivory
 
@@ -543,7 +547,8 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 		}
 		else
 		{
---			memcpy mActiveCucs@responseIdx authResp;
+			let cur = (&mActiveCucs)@toIx(responseIdx);
+			memcpy authResp cur;
 		}
 
 		store authResp.V.loiAuthorized as generateAuthorized(authResp->V.cucsId);
@@ -607,7 +612,8 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 			-- bwilson, yes, this is a second response, why?
 			-- If CUCS is authorized to some level, respond with authorized LOIs/stations.
 			alloc authResp;
---			memcpy mActiveCucs@responseIdx authResp;
+			let cur = (&mActiveCucs)@toIx(*responseIdx);
+			memcpy authResp cur;
 			store authResp.V.loiGranted as 0;
 			sendAuthorisationResponse( authResp );
 			--LOG.notice("LOI: CUCS 0x%08X is authorized to LOI 0x%X", authResp.getCucsId(), authResp.getLOI_Granted());
