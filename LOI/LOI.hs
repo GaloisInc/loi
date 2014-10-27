@@ -27,6 +27,22 @@ import qualified Stanag.VsmAuthorisationResponse as V
 import Stanag.Packing
 import Stanag.LOIMap
 
+notice :: Def('[IString] :-> Sint32)
+notice = importProc "notice" "glue.h"
+
+timestamp :: Def('[] :-> IDouble)
+timestamp = importProc "timestamp" "glue.h"
+
+sendToVehicle :: Def('[Ref s StanagBuf, Uint32] :-> ())
+sendToVehicle = importProc "sendToVehicle" "glue.h"
+
+sendToStation :: Def('[Sint32, Ref s StanagBuf, Uint32] :-> ())
+sendToStation = importProc "sendToStation" "glue.h"
+
+sendToCucs :: Def('[Ref s StanagBuf, Uint32] :-> ())
+sendToCucs = importProc "sendToCucs" "glue.h"
+
+
 [ivory|
 struct StationStatus {
  int32_t next; -- eventually will point to next component for passing data

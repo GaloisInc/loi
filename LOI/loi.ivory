@@ -80,15 +80,15 @@ bool stanagChecksum(*StanagBuf buf, uint32_t len)
 
 void processIncoming(*StanagBuf buf, uint32_t size)
 {
+	let cucsId = unpackInt32(buf, g_CUCS_OFFSET);
+	let msgType = unpackUint32(buf, g_TYPE_OFFSET);
+
 	-- checksum check
 	if (!stanagChecksum(buf, size))
 	{
-		-- LOG.notice("LOI : message from CUCS 0x%08X failed checksum", cucsId);
+		notice("LOI : message from CUCS 0x%08X failed checksum"); --, cucsId);
 		return;
 	} else {}
-
-	let cucsId = unpackInt32(buf, g_CUCS_OFFSET);
-	let msgType = unpackUint32(buf, g_TYPE_OFFSET);
 
 	if (msgType == g_CUCS_AUTHORIZATION_REQUEST)
 	{
@@ -125,17 +125,17 @@ void processIncoming(*StanagBuf buf, uint32_t size)
 		{
 			let stationbits = unpackUint32(buf, (g_CUCS_OFFSET + *offset));
 			map ii 
-			{	-- TODO: how to do bit manip and masking, this one gets pruned
+			{
 				if ((((1 << safeCast(ii)) & stationbits) > 0) && ((&mStations)@ii->nextValid))
 				{
-					--mStations[ii].next->processIncoming(buf, size);
+					sendToStation(safeCast(ii), buf, size);
 				} else {}
 			}
 		}
 		-- otherwise, this goes to the vehicle for processing
 		else
 		{
-			-- mVehicle.next->processIncoming(buf, size);
+			sendToVehicle(buf, size);
 		}
 	} else {}
 
@@ -174,23 +174,23 @@ void ackAuthorisationRequest( * struct CucsAuthorisationRequest msg )
 	store ack.M.originalMessageInstanceId as msg->C.messageInstance;
 	store ack.M.originalMessageType as msg->C.messageType;
 	store ack.M.cucsId as msg->C.cucsId;
---	store ack->M.timeStamp as now(); -- double timestamp
+	store ack.M.timeStamp as timestamp(); -- double timestamp
 	store ack.M.vehicleId as mVehicleId;
 	store ack.M.vsmId as mVehicleId;  -- TODO: readin/store vsm id
 
 --	M.messageAcknowledgement_pack(ack, buf);
---	mPrev->processOutgoing(buf, messageAcknowledgementLength());
+--	sendToCucs(buf, M.messageAcknowledgementLength());
 }
 
 void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
 {
 --	alloc buf;
---	store msg->V.timeStamp as now(); -- double timestamp
+	store msg.V.timeStamp as timestamp(); -- double timestamp
 	store msg.V.vehicleId as mVehicleId;
 	store msg.V.vsmId as mVehicleId;  -- TODO: readin/store vsm id
 
 --	V.vsmAuthorisationResponse_pack(msg, buf);
---	mPrev->processOutgoing(buf, vsmAuthorisationResponseLength());
+--	sendToCucs(buf, V.vsmAuthorisationResponseLength());
 }
 
 uint8_t requiredLOI(uint32_t messageType)
@@ -220,19 +220,23 @@ void processOutgoing(*StanagBuf buf, uint32_t size)
 			let granted = (&mActiveCucs)@ix->V.loiGranted;
 			if ( ((&mActiveCucs)@ix->V.cucsId != 0) && ((required & granted) > 0) )
 			{
-				let newCucsID = (&mActiveCucs)@ix->V.cucsId;
+				let newCucsId = (&mActiveCucs)@ix->V.cucsId;
 				alloc *newchecksum = checksum;
-				--for (int ii = 0; ii < 32; ii += 8)
-				--{
-				--	newchecksum -= (STANAG_BROADCAST_ID >> ii) & 0x0FF;  -- remove old broadcast char
-				--	newchecksum += (cucsID >> ii) & 0x0FF;   -- add new cucsID char
-				--}
+				let ix_t 5 top = 4;
 
-				packInt32(newCucsID, buf, g_CUCS_OFFSET);
+				upTo top ii
+				{
+					let uint32_t byte = safeCast(ii)*8;
+					let uint32_t mask = 0x0FF;
+					store newchecksum as *newchecksum - ((twosCompRep(g_STANAG_BROADCAST_ID) >> byte) & mask); -- remove old broadcast char
+					store newchecksum as *newchecksum + ((twosCompRep(newCucsId) >> byte) & mask);   -- add new cucsID char
+				}
+
+				packInt32(newCucsId, buf, g_CUCS_OFFSET);
 				packUint32(*newchecksum, buf, size - 4);
 
 				-- Send the message to the CUCS.
-				--mPrev->processOutgoing(buf, size);
+				sendToCucs(buf, size);
  			}
 			else {}
 		}
@@ -244,7 +248,7 @@ void processOutgoing(*StanagBuf buf, uint32_t size)
 			let granted = (&mActiveCucs)@ix->V.loiGranted;
 			if (((&mActiveCucs)@ix->V.cucsId == cucsId) && ((required & granted) > 0 ))
 			{
-				-- mPrev->processOutgoing(buf, size);
+				sendToCucs(buf, size);
  			} else {}
 		}
 	}
@@ -278,21 +282,21 @@ uint8_t generateAuthorized(int32_t cucsId)
 void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseIndex, StationIdx stationIndex)
 {
 	alloc *update = false;
-	let authIdx = (&mStations)@stationIndex->authIdx;
+	let authIdxx = (&mStations)@stationIndex->authIdx;
 
 	-- noone has control or we already have control
-	if ((authIdx < 0) || (request->C.cucsId == (&mActiveCucs)@toIx(authIdx)->V.cucsId))
+	if ((authIdxx < 0) || (request->C.cucsId == (&mActiveCucs)@toIx(authIdxx)->V.cucsId))
 	{
 		-- allows a new CUCS to obtain control or the controlling CUCS to change between override and request mode
 		store (&mStations)@stationIndex.overriden as (request->C.controlledStationMode == g_OVERRIDE_CONTROL);
-		if ( authIdx < 0 ) {
+		if ( authIdxx < 0 ) {
 			store update as true;
 		} else {}
 	}
 	else
 	{
 		-- can we override another CUCS control?
-		let resp = (&mActiveCucs)@toIx(authIdx);
+		let resp = (&mActiveCucs)@toIx(authIdxx);
 
 		if ((g_OVERRIDE_CONTROL == request->C.controlledStationMode) && !(&mStations)@stationIndex->overriden)
 		{
@@ -327,7 +331,7 @@ void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseInde
 	if (*update)
 	{
 		-- remember the CUCS in control of this station
---		store (&mStations)@stationIndex.authIdx as responseIndex;
+		store (&mStations)@stationIndex.authIdx as safeCast(responseIndex);
 		let resp = (&mActiveCucs)@responseIndex;
 		store resp.V.loiGranted as ( resp->V.loiGranted | loi_3 );
 		store resp.V.controlledStation as ( resp->V.controlledStation | (1 << safeCast(stationIndex)));
@@ -517,7 +521,7 @@ void requestLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 	if ( prevgranted != cur->V.loiGranted )
 	{
 		-- Indicate the LOIs granted/authorized as a result of this request.
-		--let granted = cur->V.loiGranted & (cur->V.loiGranted ^ prevgranted);
+		--let granted = (safeCast(cur->V.loiGranted) & (cur->V.loiGranted ^ prevgranted));
 		--LOG.notice("LOI: CUCS 0x%08X granted LOI 0x%X", cur->getCucsId(), granted);
 		--LOG.notice("LOI: CUCS 0x%08X has LOI 0x%X", cur->getCucsId(), cur->getLOI_Granted());
 	} else {}
@@ -585,9 +589,9 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 				return;
 			} else {}
 
-			-- memset(mActiveCucs@responseIdx, 0, sizeof(StanagVsmAuthorizationResponse));
 			let idx = toIx(*responseIdx);
 
+			-- memset mActiveCucs@idx 0
 			store (&mActiveCucs)@idx.V.cucsId as request->C.cucsId;
 			store (&mActiveCucs)@idx.V.vehicleType as mVehicleType;
 			store (&mActiveCucs)@idx.V.vehicleSubtype as mVehicleSubType;
