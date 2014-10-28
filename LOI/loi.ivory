@@ -30,16 +30,6 @@ loi_3 = 0x02;
 loi_4 = 0x04;
 loi_5 = 0x08;
 
---------------------------------------------------------------------------------
--- XXX Made up definitions for now
-
--- Startup config values
---uint16_t mVehicleType	= 0;
---uint16_t mVehicleSubType = 0;
---int32_t  mVehicleId = 0;
-
---------------------------------------------------------------------------------
-
 int32_t findResponse(int32_t cucsID) {
   map ix {
 	if ((&mActiveCucs)@ix -> V.cucsId == cucsID) {
@@ -92,7 +82,7 @@ void processIncoming(*StanagBuf buf, uint32_t size)
 	-- checksum check
 	if (!stanagChecksum(buf, size))
 	{
-		noticei("LOI : message from CUCS 0x%08X failed checksum", cucsId);
+		loggeri(1, "LOI : message from CUCS 0x%08X failed checksum", cucsId);
 		return;
 	} else {}
 
@@ -316,7 +306,7 @@ void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseInde
 			{
 				-- If this CUCS is no longer in control of any stations, revoke LOI 3.
 				store resp.V.loiGranted as ( safeCast(resp->V.loiGranted) & ~loi_3 );
-				noticei("LOI: CUCS 0x%08X controls no longer controls any stations", resp->V.cucsId);
+				loggeri(1, "LOI: CUCS 0x%08X controls no longer controls any stations", resp->V.cucsId);
 			} else {}
 
 			store resp.V.loiAuthorized as 0;
@@ -330,7 +320,7 @@ void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseInde
 			store authResp.V.controlledStationMode as g_RELINQUISH_CONTROL;
 			sendAuthorisationResponse( authResp );
 
-			--LOG.notice("LOI: CUCS 0x%08X snatched LOI 3 Station #%d from CUCS 0x%08X", mActiveCucs[responseIndex].getCucsId(), stationIndex+1, resp->getCucsId());
+			loggeriii(1, "LOI: CUCS 0x%08X snatched LOI 3 Station #%d from CUCS 0x%08X", (&mActiveCucs)@responseIndex->V.cucsId, safeCast(stationIndex)+1, resp->V.cucsId);
 		} else {}
 	}
 
@@ -342,7 +332,7 @@ void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseInde
 		store resp.V.loiGranted as ( resp->V.loiGranted | loi_3 );
 		store resp.V.controlledStation as ( resp->V.controlledStation | (1 << safeCast(stationIndex)));
 
-		-- LOG.notice("LOI: CUCS 0x%08X controls Station #%d", resp->getCucsId(), stationIndex+1);
+		loggerii(1, "LOI: CUCS 0x%08X controls Station #%d", resp->V.cucsId, safeCast(stationIndex)+1);
 	} else {}
 }
 
@@ -367,7 +357,7 @@ void requestLOI45(* struct CucsAuthorisationRequest request, CucsIdx responseInd
 		if (cur->V.loiGranted != requestedLOI) {
 			store cur.V.loiGranted as safeCast(cur->V.loiGranted) & ~(loi_4|loi_5);
 		} else {}
-		--LOG.notice("LOI: CUCS 0x%08X changed LOI45, now at 0x%X", cur->getCucsId(), requestedLOI);
+		loggerii(1, "LOI: CUCS 0x%08X changed LOI45, now at 0x%X", cur->V.cucsId, safeCast(requestedLOI));
 		store (&mVehicle).overriden as (g_OVERRIDE_CONTROL == request->C.controlledStationMode);
 		store cur.V.loiGranted as cur->V.loiGranted | requestedLOI;
 		return;
@@ -391,7 +381,7 @@ void requestLOI45(* struct CucsAuthorisationRequest request, CucsIdx responseInd
 		store authResp.V.controlledStationMode as g_RELINQUISH_CONTROL;
 		sendAuthorisationResponse( authResp );
 
-		-- LOG.notice("LOI: CUCS 0x%08X snatched LOI45 from CUCS 0x%08X", mActiveCucs[responseIndex].getCucsId(), cur->getCucsId());
+		loggerii(1, "LOI: CUCS 0x%08X snatched LOI45 from CUCS 0x%08X", (&mActiveCucs)@responseIndex->V.cucsId, cur->V.cucsId);
 
 		-- remember who has control of this AV
 		store (&mVehicle).authIdx as safeCast(responseIndex);
@@ -410,7 +400,7 @@ void dropLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 	--LOI 4/5 is for the air vehicle and LOI 3 is for the payload at the Controlled Station.
 	--The CUCS inserts the Controlled Station Mode as Relinquish Control.
 
-	-- LOG.notice("LOI: CUCS 0x%08X attempting to relinquish LOI 0x%X", request->getCucsId(), request->GetRequestedLoi());
+	loggerii(1, "LOI: CUCS 0x%08X attempting to relinquish LOI 0x%X", request->C.cucsId, safeCast(request->C.requestedHandoverLoi));
 
 	if ((&mVehicle)->authIdx == safeCast(responseIdx)) -- compare as ints as we want to keep -1 if there
 	{
@@ -455,7 +445,7 @@ void dropLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 	if ( cur->V.loiGranted == 0 )
 	{
 		-- 'remove' the response from the list of active cucs
-		-- LOG.notice("LOI: CUCS 0x%08X removed from authorized list", cur->getCucsId());
+		loggeri(1, "LOI: CUCS 0x%08X removed from authorized list", cur->V.cucsId);
 		store cur.V.cucsId as 0;
 	} else {}
 
@@ -474,9 +464,9 @@ void dropLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 	if ( prevgranted != cur->V.loiGranted )
 	{
 		-- Indicate the LOIs relinquished as a result of this request.
-		--let relinquished = prevgranted & (prevgranted ^ cur->getLOI_Granted());
-		--LOG.notice("LOI: CUCS 0x%08X relinquished LOI 0x%X", cur->getCucsId(), relinquished);
-		--LOG.notice("LOI: CUCS 0x%08X has LOI 0x%X", cur->getCucsId(), cur->getLOI_Granted());
+		let relinquished = prevgranted & (prevgranted ^ cur->V.loiGranted);
+		loggerii(1, "LOI: CUCS 0x%08X relinquished LOI 0x%X", cur->V.cucsId, safeCast(relinquished));
+		loggerii(1, "LOI: CUCS 0x%08X has LOI 0x%X", cur->V.cucsId, safeCast(cur->V.loiGranted));
 	} else {}
 }
 
@@ -486,13 +476,13 @@ void requestLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 	let prevgranted = cur->V.loiGranted;
 	store cur.V.loiAuthorized as 0;
 
-	--LOG.notice("LOI: CUCS 0x%08X requesting LOI 0x%X", request->getCucsId(), request->GetRequestedLoi());
+	loggerii(1, "LOI: CUCS 0x%08X requesting LOI 0x%X", request->C.cucsId, safeCast(request->C.requestedHandoverLoi));
 
 	-- determine if CUCS wants to monitor this VSM
 	if (((safeCast(request->C.requestedHandoverLoi) & loi_2) > 0) && ((safeCast(prevgranted) & loi_2) == 0))
 	{
 		store cur.V.loiGranted as loi_2;
-		-- LOG.notice("LOI: CUCS 0x%08X granted LOI2", cur->getCucsId());
+		loggeri(1, "LOI: CUCS 0x%08X granted LOI2", cur->V.cucsId);
 	} else {}
 
 	-- determine if CUCS wants any payload control
@@ -527,9 +517,9 @@ void requestLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 	if ( prevgranted != cur->V.loiGranted )
 	{
 		-- Indicate the LOIs granted/authorized as a result of this request.
-		--let granted = (safeCast(cur->V.loiGranted) & (cur->V.loiGranted ^ prevgranted));
-		--LOG.notice("LOI: CUCS 0x%08X granted LOI 0x%X", cur->getCucsId(), granted);
-		--LOG.notice("LOI: CUCS 0x%08X has LOI 0x%X", cur->getCucsId(), cur->getLOI_Granted());
+		let granted = safeCast(cur->V.loiGranted) & (cur->V.loiGranted ^ prevgranted);
+		loggerii(1, "LOI: CUCS 0x%08X granted LOI 0x%X", cur->V.cucsId, safeCast(granted));
+		loggerii(1, "LOI: CUCS 0x%08X has LOI 0x%X", cur->V.cucsId, safeCast(cur->V.loiGranted));
 	} else {}
 }
 
@@ -569,11 +559,11 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 			store authResp.V.loiGranted as 0;
 			store authResp.V.controlledStationMode as g_TAKE_CONTROL;
 			sendAuthorisationResponse( authResp );
-			--LOG.notice("LOI: CUCS 0x%08X is authorized for 0x%X", authResp.getCucsId(), authResp.getLOI_Authorized());
+			loggerii(1, "LOI: CUCS 0x%08X is authorized for 0x%X", authResp->V.cucsId, safeCast(authResp->V.loiAuthorized));
 		}
 		else
 		{
-			--LOG.notice("LOI: CUCS 0x%08X is not authorized on any level", authResp.getCucsId());
+			loggeri(1, "LOI: CUCS 0x%08X is not authorized on any level", authResp->V.cucsId);
 		}
 	}
 	else -- Message was sent directly to this VSM.
@@ -590,7 +580,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 			store responseIdx as findResponse(0); -- first blank spot
 			if (*responseIdx < 0)
 			{
-				--LOG.notice("LOI: CUCS list is FULL, ignoring requests");
+				logger(1, "LOI: CUCS list is FULL, ignoring requests");
 				--SetStatusAlert(PRIORITY_NOMINAL,SUBSYS_VSM_STATUS,STATUS_CLEARABLE,VSM_NOMINAL_CUCS_TABLE_FULL,VSM_NOMINAL_CUCS_TABLE_FULL_TEXT,10);
 				return;
 			} else {}
@@ -604,7 +594,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 			store (&mActiveCucs)@idx.V.loiGranted as 0;
 			store (&mActiveCucs)@idx.V.loiAuthorized as 0;
 			store (&mActiveCucs)@idx.V.controlledStation as 0;
-			-- LOG.notice("LOI: CUCS 0x%08X added to authorized list", request->getCucsId());
+			loggeri(1, "LOI: CUCS 0x%08X added to authorized list", request->C.cucsId);
 		} else {}
 
 		let idx = toIx(*responseIdx);
@@ -626,7 +616,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 			memcpy authResp cur;
 			store authResp.V.loiGranted as 0;
 			sendAuthorisationResponse( authResp );
-			--LOG.notice("LOI: CUCS 0x%08X is authorized to LOI 0x%X", authResp.getCucsId(), authResp.getLOI_Granted());
+			loggerii(1, "LOI: CUCS 0x%08X is authorized to LOI 0x%X", authResp->V.cucsId, safeCast(authResp->V.loiGranted));
 		} else {}
 	}
 }

@@ -27,8 +27,17 @@ import qualified Stanag.VsmAuthorisationResponse as V
 import Stanag.Packing
 import Stanag.LOIMap
 
-noticei :: Def('[IString, Sint32] :-> ())
-noticei = importProc "noticei" "glue.h"
+logger :: Def('[Sint32, IString] :-> ())
+logger = importProc "logger" "glue.h"
+
+loggeri :: Def('[Sint32, IString, Sint32] :-> ())
+loggeri = importProc "loggeri" "glue.h"
+
+loggerii :: Def('[Sint32, IString, Sint32, Sint32] :-> ())
+loggerii = importProc "loggerii" "glue.h"
+
+loggeriii :: Def('[Sint32, IString, Sint32, Sint32, Sint32] :-> ())
+loggeriii = importProc "loggeriii" "glue.h"
 
 warni :: Def('[IString, Sint32] :-> ())
 warni = importProc "warni" "glue.h"
