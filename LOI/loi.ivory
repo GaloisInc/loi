@@ -34,9 +34,9 @@ loi_5 = 0x08;
 -- XXX Made up definitions for now
 
 -- Startup config values
-mVehicleType	= 0;
-mVehicleSubType = 0;
-mVehicleId = 0;
+--uint16_t mVehicleType	= 0;
+--uint16_t mVehicleSubType = 0;
+--int32_t  mVehicleId = 0;
 
 --------------------------------------------------------------------------------
 
@@ -77,6 +77,12 @@ bool stanagChecksum(*StanagBuf buf, uint32_t len)
 	return (*check == tomatch);
 }
 
+void loiInit(uint16_t vt, uint16_t vst, int32_t vi)
+{
+	store (&mLOIConfig).vehicleType as vt;
+	store (&mLOIConfig).vehicleSubType as vst;
+	store (&mLOIConfig).vehicleId as vi;
+}
 
 void processIncoming(*StanagBuf buf, uint32_t size)
 {
@@ -86,7 +92,7 @@ void processIncoming(*StanagBuf buf, uint32_t size)
 	-- checksum check
 	if (!stanagChecksum(buf, size))
 	{
-		notice("LOI : message from CUCS 0x%08X failed checksum"); --, cucsId);
+		noticei("LOI : message from CUCS 0x%08X failed checksum", cucsId);
 		return;
 	} else {}
 
@@ -175,8 +181,8 @@ void ackAuthorisationRequest( * struct CucsAuthorisationRequest msg )
 	store ack.M.originalMessageType as msg->C.messageType;
 	store ack.M.cucsId as msg->C.cucsId;
 	store ack.M.timeStamp as timestamp(); -- double timestamp
-	store ack.M.vehicleId as mVehicleId;
-	store ack.M.vsmId as mVehicleId;  -- TODO: readin/store vsm id
+	store ack.M.vehicleId as (&mLOIConfig)->vehicleId;
+	store ack.M.vsmId as (&mLOIConfig)->vehicleId;  -- TODO: readin/store vsm id
 
 --	M.messageAcknowledgement_pack(ack, buf);
 --	sendToCucs(buf, M.messageAcknowledgementLength());
@@ -186,8 +192,8 @@ void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
 {
 --	alloc buf;
 	store msg.V.timeStamp as timestamp(); -- double timestamp
-	store msg.V.vehicleId as mVehicleId;
-	store msg.V.vsmId as mVehicleId;  -- TODO: readin/store vsm id
+	store msg.V.vehicleId as (&mLOIConfig)->vehicleId;
+	store msg.V.vsmId as (&mLOIConfig)->vehicleId;  -- TODO: readin/store vsm id
 
 --	V.vsmAuthorisationResponse_pack(msg, buf);
 --	sendToCucs(buf, V.vsmAuthorisationResponseLength());
@@ -310,7 +316,7 @@ void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseInde
 			{
 				-- If this CUCS is no longer in control of any stations, revoke LOI 3.
 				store resp.V.loiGranted as ( safeCast(resp->V.loiGranted) & ~loi_3 );
-				-- LOG.notice("LOI: CUCS 0x%08X controls no longer controls any stations", resp->getCucsId() );
+				noticei("LOI: CUCS 0x%08X controls no longer controls any stations", resp->V.cucsId);
 			} else {}
 
 			store resp.V.loiAuthorized as 0;
@@ -543,8 +549,8 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 		if (responseIdx < 0)
 		{
 			store authResp.V.cucsId as cucsId;
-			store authResp.V.vehicleType as mVehicleType;
-			store authResp.V.vehicleSubtype as mVehicleSubType;
+			store authResp.V.vehicleType as (&mLOIConfig)->vehicleType;
+			store authResp.V.vehicleSubtype as (&mLOIConfig)->vehicleSubType;
 			store authResp.V.loiGranted as 0;
 			store authResp.V.loiAuthorized as 0;
 			store authResp.V.controlledStation as 0;
@@ -593,8 +599,8 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 
 			-- memset mActiveCucs@idx 0
 			store (&mActiveCucs)@idx.V.cucsId as request->C.cucsId;
-			store (&mActiveCucs)@idx.V.vehicleType as mVehicleType;
-			store (&mActiveCucs)@idx.V.vehicleSubtype as mVehicleSubType;
+			store (&mActiveCucs)@idx.V.vehicleType as (&mLOIConfig)->vehicleType;
+			store (&mActiveCucs)@idx.V.vehicleSubtype as (&mLOIConfig)->vehicleSubType;
 			store (&mActiveCucs)@idx.V.loiGranted as 0;
 			store (&mActiveCucs)@idx.V.loiAuthorized as 0;
 			store (&mActiveCucs)@idx.V.controlledStation as 0;

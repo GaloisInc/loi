@@ -27,8 +27,11 @@ import qualified Stanag.VsmAuthorisationResponse as V
 import Stanag.Packing
 import Stanag.LOIMap
 
-notice :: Def('[IString] :-> Sint32)
-notice = importProc "notice" "glue.h"
+noticei :: Def('[IString, Sint32] :-> ())
+noticei = importProc "noticei" "glue.h"
+
+warni :: Def('[IString, Sint32] :-> ())
+warni = importProc "warni" "glue.h"
 
 timestamp :: Def('[] :-> IDouble)
 timestamp = importProc "timestamp" "glue.h"
@@ -50,15 +53,26 @@ struct StationStatus {
  bool overriden;
  int32_t authIdx; -- can be -1 for not valid
 }
+
+struct LOIConfig {
+ uint16_t vehicleType;
+ uint16_t vehicleSubType;
+ int32_t  vehicleId;
+}
 |]
 
 
 type StationIdx = Ix 32
 mStations :: MemArea (Array 32 (Struct "StationStatus"))
-mStations = area "mStations" Nothing
+mStations = area "mStations" (Just (iarray (replicate 32 station)))
+  where
+  station = istruct [ authIdx .= ival (-1), nextValid .= ival false, overriden .= ival false ]
 
 mVehicle :: MemArea (Struct "StationStatus")
-mVehicle = area "mVehicle" Nothing
+mVehicle = area "mVehicle" (Just (istruct [ authIdx .= ival (-1), nextValid .= ival false, overriden .= ival false ]))
+
+mLOIConfig :: MemArea (Struct "LOIConfig")
+mLOIConfig = area "mLOIConfig" (Just (istruct [ vehicleType .= ival 0, vehicleSubType .= ival 0, vehicleId .= ival 0 ]))
 
 -- this size determines max number of CUCS that can be active
 type CucsIdx = Ix 6
@@ -81,6 +95,7 @@ loiModule = package "loiModule" $ do
    defMemArea mStations
    defMemArea mVehicle
    defMemArea mActiveCucs
+   defMemArea mLOIConfig
    defStruct (Proxy :: Proxy "StationStatus")
 
 allModules :: [Module]
