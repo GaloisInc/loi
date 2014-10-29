@@ -1,0 +1,5 @@
+Pseudo
+.cabal-sandbox
+cabal.sandbox.config
+dist
+Config.mk
