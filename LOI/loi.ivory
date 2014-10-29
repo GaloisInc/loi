@@ -72,6 +72,9 @@ void loiInit(uint16_t vt, uint16_t vst, int32_t vi)
 	store (&mLOIConfig).vehicleType as vt;
 	store (&mLOIConfig).vehicleSubType as vst;
 	store (&mLOIConfig).vehicleId as vi;
+	-- this would come from our component connection stuff
+	store (&mVehicle).nextValid as true;
+	store (&mStations)@0.nextValid as true;
 }
 
 void processIncoming(*StanagBuf buf, uint32_t size)
@@ -164,7 +167,7 @@ bool applyLoiMessageFilter( int32_t cucsId, uint32_t msgType )
 void ackAuthorisationRequest( * struct CucsAuthorisationRequest msg )
 {
 	alloc ack;
---	alloc buf;
+	alloc buf;
 
 	store ack.M.originalMessageTimeStamp as msg->C.timeStamp;
 	store ack.M.originalMessageInstanceId as msg->C.messageInstance;
@@ -174,19 +177,19 @@ void ackAuthorisationRequest( * struct CucsAuthorisationRequest msg )
 	store ack.M.vehicleId as (&mLOIConfig)->vehicleId;
 	store ack.M.vsmId as (&mLOIConfig)->vehicleId;  -- TODO: readin/store vsm id
 
---	M.messageAcknowledgement_pack(ack, buf);
---	sendToCucs(buf, M.messageAcknowledgementLength());
+	M.messageAcknowledgement_pack(ack, buf);
+	sendToCucs(buf, M.messageAcknowledgementLength());
 }
 
 void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
 {
---	alloc buf;
+	alloc buf;
 	store msg.V.timeStamp as timestamp(); -- double timestamp
 	store msg.V.vehicleId as (&mLOIConfig)->vehicleId;
 	store msg.V.vsmId as (&mLOIConfig)->vehicleId;  -- TODO: readin/store vsm id
 
---	V.vsmAuthorisationResponse_pack(msg, buf);
---	sendToCucs(buf, V.vsmAuthorisationResponseLength());
+	V.vsmAuthorisationResponse_pack(msg, buf);
+	sendToCucs(buf, V.vsmAuthorisationResponseLength());
 }
 
 uint8_t requiredLOI(uint32_t messageType)
@@ -594,6 +597,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 			store (&mActiveCucs)@idx.V.loiGranted as 0;
 			store (&mActiveCucs)@idx.V.loiAuthorized as 0;
 			store (&mActiveCucs)@idx.V.controlledStation as 0;
+			store (&mActiveCucs)@idx.V.controlledStationMode as 0;
 			loggeri(1, "LOI: CUCS 0x%08X added to authorized list", request->C.cucsId);
 		} else {}
 
