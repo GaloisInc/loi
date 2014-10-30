@@ -28,32 +28,32 @@ import qualified Stanag.VsmAuthorisationResponse as V
 import Stanag.Packing
 import Stanag.LOIMap
 
+glueHeader :: String
+glueHeader = "loiglue.h"
+
 logger :: Def('[Sint32, IString] :-> ())
-logger = importProc "logger" "glue.h"
+logger = importProc "logger" glueHeader
 
 loggeri :: Def('[Sint32, IString, Sint32] :-> ())
-loggeri = importProc "loggeri" "glue.h"
+loggeri = importProc "loggeri" glueHeader
 
 loggerii :: Def('[Sint32, IString, Sint32, Sint32] :-> ())
-loggerii = importProc "loggerii" "glue.h"
+loggerii = importProc "loggerii" glueHeader
 
 loggeriii :: Def('[Sint32, IString, Sint32, Sint32, Sint32] :-> ())
-loggeriii = importProc "loggeriii" "glue.h"
-
-warni :: Def('[IString, Sint32] :-> ())
-warni = importProc "warni" "glue.h"
+loggeriii = importProc "loggeriii" glueHeader
 
 timestamp :: Def('[] :-> IDouble)
-timestamp = importProc "timestamp" "glue.h"
+timestamp = importProc "timestamp" glueHeader
 
 sendToVehicle :: Def('[Ref s StanagBuf, Uint32] :-> ())
-sendToVehicle = importProc "sendToVehicle" "glue.h"
+sendToVehicle = importProc "sendToVehicle" glueHeader
 
 sendToStation :: Def('[Sint32, Ref s StanagBuf, Uint32] :-> ())
-sendToStation = importProc "sendToStation" "glue.h"
+sendToStation = importProc "sendToStation" glueHeader
 
 sendToCucs :: Def('[Ref s StanagBuf, Uint32] :-> ())
-sendToCucs = importProc "sendToCucs" "glue.h"
+sendToCucs = importProc "sendToCucs" glueHeader
 
 
 [ivory|
@@ -102,6 +102,7 @@ loiModule = package "loiModule" $ do
    depend C.stanagcucsauthorisationrequest
    depend V.stanagvsmauthorisationresponse
    depend loiloi
+   inclHeader glueHeader
    defMemArea mStations
    defMemArea mVehicle
    defMemArea mActiveCucs

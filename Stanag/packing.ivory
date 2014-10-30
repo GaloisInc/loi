@@ -1,5 +1,7 @@
 -- # -*- mode: haskell -*-
 
+include serializeModule 
+
 type Index = uint32_t;
 string struct Stanag 33
 string struct Stanaglong 400
