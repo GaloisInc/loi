@@ -91,7 +91,7 @@ void processIncoming(*StanagBuf buf, uint32_t size)
 
 	if (msgType == g_CUCS_AUTHORIZATION_REQUEST)
 	{
-		alloc msg;
+		alloc msg{};
 		C.cucsAuthorisationRequest_unpack(buf, msg);
 		handleStanagCucsAuthorisationRequest(msg);
 		ackAuthorisationRequest(msg);
@@ -166,8 +166,8 @@ bool applyLoiMessageFilter( int32_t cucsId, uint32_t msgType )
 
 void ackAuthorisationRequest( * struct CucsAuthorisationRequest msg )
 {
-	alloc ack;
-	alloc buf;
+	alloc ack{};
+	alloc buf[];
 
 	store ack.M.originalMessageTimeStamp as msg->C.timeStamp;
 	store ack.M.originalMessageInstanceId as msg->C.messageInstance;
@@ -183,7 +183,7 @@ void ackAuthorisationRequest( * struct CucsAuthorisationRequest msg )
 
 void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
 {
-	alloc buf;
+	alloc buf[];
 	store msg.V.timeStamp as timestamp(); -- double timestamp
 	store msg.V.vehicleId as (&mLOIConfig)->vehicleId;
 	store msg.V.vsmId as (&mLOIConfig)->vehicleId;  -- TODO: readin/store vsm id
@@ -316,7 +316,7 @@ void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseInde
 			store resp.V.controlledStationMode as g_RELINQUISH_CONTROL;
 
 			-- Notify former CUCS it has lost control of this station.
-			alloc authResp;
+			alloc authResp{};
 			memcpy authResp resp;
 			store authResp.V.loiGranted as loi_3;
 			store authResp.V.controlledStation as (1 << safeCast(stationIndex));
@@ -377,7 +377,7 @@ void requestLOI45(* struct CucsAuthorisationRequest request, CucsIdx responseInd
 		store cur.V.controlledStationMode as g_RELINQUISH_CONTROL;
 
 		-- notify former CUCS in control of loss of LOI 4
-		alloc authResp;
+		alloc authResp{};
 		memcpy authResp cur;
 		store authResp.V.loiGranted as requestedLOI;
 		store authResp.V.controlledStation as 0;
@@ -453,7 +453,7 @@ void dropLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 	} else {}
 
 	-- Respond with the LOIs/stations relinquished.
-	alloc authResp;
+	alloc authResp{};
 	memcpy authResp cur;
 	store authResp.V.loiGranted as request->C.requestedHandoverLoi;
 	if ((safeCast(request->C.requestedHandoverLoi) & loi_3) > 0) {
@@ -536,7 +536,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 	-- Check for a broadcast message
 	if (g_STANAG_BROADCAST_ID == request->C.vehicleId)
 	{
-		alloc authResp;
+		alloc authResp{};
 		let responseIdx = findResponse(cucsId);
 
 		if (responseIdx < 0)
@@ -615,7 +615,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 		{
 			-- bwilson, yes, this is a second response, why?
 			-- If CUCS is authorized to some level, respond with authorized LOIs/stations.
-			alloc authResp;
+			alloc authResp{};
 			let cur = (&mActiveCucs)@toIx(*responseIdx);
 			memcpy authResp cur;
 			store authResp.V.loiGranted as 0;
