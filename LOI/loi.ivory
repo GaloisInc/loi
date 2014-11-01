@@ -51,39 +51,31 @@ int32_t getActiveCUCSCount()
   return *cnt;
 }
 
-
-bool stanagChecksum(*StanagBuf buf, uint32_t len)
-{
-	let bound = len - 4;
-	let tomatch = unpackUint32(buf, bound);
-	alloc *check = 0;
- 
-	let ix_t 576 boundIx = toIx(twosCompCast(bound));
-	upTo boundIx ix {
-		let uint32_t data = safeCast(buf[ix]);
-		store check as *check + data;
-	}
-
-	return (*check == tomatch);
-}
-
 void loiInit(uint16_t vt, uint16_t vst, int32_t vi)
 {
 	store (&mLOIConfig).vehicleType as vt;
 	store (&mLOIConfig).vehicleSubType as vst;
 	store (&mLOIConfig).vehicleId as vi;
-	-- this would come from our component connection stuff
-	store (&mVehicle).nextValid as true;
-	store (&mStations)@0.nextValid as true;
 }
 
-void processIncoming(*StanagBuf buf, uint32_t size)
+void loiConnectVehicle()
+{
+	store (&mVehicle).nextValid as true;
+}
+
+void loiConnectStation(StationIdx station)
+{
+	store (&mStations)@station.nextValid as true;
+}
+
+
+void loiProcessIncoming(*StanagBuf buf, uint32_t size)
 {
 	let cucsId = unpackInt32(buf, g_CUCS_OFFSET);
 	let msgType = unpackUint32(buf, g_TYPE_OFFSET);
 
 	-- checksum check
-	if (!stanagChecksum(buf, size))
+	if (!verifyChecksum(buf, size))
 	{
 		loggeri(1, "LOI : message from CUCS 0x%08X failed checksum", cucsId);
 		return;
@@ -177,8 +169,10 @@ void ackAuthorisationRequest( * struct CucsAuthorisationRequest msg )
 	store ack.M.vehicleId as (&mLOIConfig)->vehicleId;
 	store ack.M.vsmId as (&mLOIConfig)->vehicleId;  -- TODO: readin/store vsm id
 
+	M.messageAcknowledgement_headerSet(ack);
 	M.messageAcknowledgement_pack(ack, buf);
-	sendToCucs(buf, M.messageAcknowledgementLength());
+	placeChecksum(buf, M.messageAcknowledgementLength);
+	sendToCucs(buf, M.messageAcknowledgementLength);
 }
 
 void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
@@ -188,8 +182,10 @@ void sendAuthorisationResponse( * struct VsmAuthorisationResponse msg )
 	store msg.V.vehicleId as (&mLOIConfig)->vehicleId;
 	store msg.V.vsmId as (&mLOIConfig)->vehicleId;  -- TODO: readin/store vsm id
 
+	V.vsmAuthorisationResponse_headerSet(msg);
 	V.vsmAuthorisationResponse_pack(msg, buf);
-	sendToCucs(buf, V.vsmAuthorisationResponseLength());
+	placeChecksum(buf, V.vsmAuthorisationResponseLength);
+	sendToCucs(buf, V.vsmAuthorisationResponseLength);
 }
 
 uint8_t requiredLOI(uint32_t messageType)
@@ -202,7 +198,7 @@ uint8_t requiredLOI(uint32_t messageType)
 	return 0;
 }
 
-void processOutgoing(*StanagBuf buf, uint32_t size)
+void loiProcessOutgoing(*StanagBuf buf, uint32_t size)
 {
 	let cucsId = unpackInt32(buf, g_CUCS_OFFSET);
 	let msgType = unpackUint32(buf, g_TYPE_OFFSET);

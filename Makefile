@@ -43,7 +43,6 @@ endif
 .PHONY: gen
 gen:
 	-cabal exec ghc LOI/LOI.hs
-	-./LOI/LOI
 
 .PHONY: clean
 clean:

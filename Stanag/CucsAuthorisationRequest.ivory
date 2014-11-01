@@ -22,8 +22,9 @@ struct CucsAuthorisationRequest
 }
 
 
-uint32_t cucsAuthorisationRequestMsgNum() { return 1; }
-uint32_t cucsAuthorisationRequestLength() { return 35; }
+uint32_t cucsAuthorisationRequestMsgNum = 1;
+uint32_t cucsAuthorisationRequestMsgLen = 35;
+uint32_t cucsAuthorisationRequestLength = 69;
 
 
 void cucsAuthorisationRequest_setvehicleSubtype(*struct CucsAuthorisationRequest msg, uint16_t val)
@@ -53,6 +54,17 @@ void cucsAuthorisationRequest_unpack(*StanagBuf buf, * struct CucsAuthorisationR
   store msg.controlledStation as unpackUint32(buf, 59);
   store msg.controlledStationMode as unpackUint8(buf, 63);
   store msg.waitForCoordination as unpackUint8(buf, 64);
+}
+
+
+void cucsAuthorisationRequest_headerSet(* struct CucsAuthorisationRequest msg)
+{
+  store (&cucsAuthorisationRequestInstance) as *(&cucsAuthorisationRequestInstance) + 1;
+  store msg.messageInstance as *(&cucsAuthorisationRequestInstance);
+  store msg.messageType as 1;
+  store msg.messageLength as 35;
+  store msg.streamId as -1;
+  store msg.packetSequenceNumber as -1;
 }
 
 

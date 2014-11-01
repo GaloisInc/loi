@@ -22,8 +22,9 @@ struct VsmAuthorisationResponse
 }
 
 
-uint32_t vsmAuthorisationResponseMsgNum() { return 21; }
-uint32_t vsmAuthorisationResponseLength() { return 35; }
+uint32_t vsmAuthorisationResponseMsgNum = 21;
+uint32_t vsmAuthorisationResponseMsgLen = 35;
+uint32_t vsmAuthorisationResponseLength = 69;
 
 
 void vsmAuthorisationResponse_setvehicleSubtype(*struct VsmAuthorisationResponse msg, uint16_t val)
@@ -53,6 +54,17 @@ void vsmAuthorisationResponse_unpack(*StanagBuf buf, * struct VsmAuthorisationRe
   store msg.controlledStationMode as unpackUint8(buf, 60);
   store msg.vehicleType as unpackUint16(buf, 61);
   store msg.vehicleSubtype as unpackUint16(buf, 63);
+}
+
+
+void vsmAuthorisationResponse_headerSet(* struct VsmAuthorisationResponse msg)
+{
+  store (&vsmAuthorisationResponseInstance) as *(&vsmAuthorisationResponseInstance) + 1;
+  store msg.messageInstance as *(&vsmAuthorisationResponseInstance);
+  store msg.messageType as 21;
+  store msg.messageLength as 35;
+  store msg.streamId as -1;
+  store msg.packetSequenceNumber as -1;
 }
 
 

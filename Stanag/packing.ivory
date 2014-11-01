@@ -1,11 +1,42 @@
 -- # -*- mode: haskell -*-
 
 include serializeModule
-addfile "../ivory-serialize-0.1/support/ivory_serialize_prim.h"
+-- addfile "../ivory-serialize-0.1/support/ivory_serialize_prim.h"
 
 type Index = uint32_t;
 string struct Stanag 33
 string struct Stanaglong 400
+
+------------------------------------------------------------
+-- Checksum
+
+bool verifyChecksum(*StanagBuf buf, uint32_t len)
+{
+    let bound = len - 4;
+    let tomatch = unpackUint32(buf, bound);
+    return (stanagChecksum(buf, len) == tomatch);
+}
+
+void placeChecksum(*StanagBuf buf, uint32_t len)
+{
+    let bound = len - 4;
+    let check = stanagChecksum(buf, len);
+    packUint32(check, buf, bound);
+}
+
+uint32_t stanagChecksum(*StanagBuf buf, uint32_t len)
+{
+    let bound = len - 4;
+    alloc *check = 0;
+
+    let ix_t 576 boundIx = toIx(twosCompCast(bound));
+    upTo boundIx ix {
+        let uint32_t data = safeCast(buf[ix]);
+        store check as *check + data;
+    }
+
+    return *check;
+}
 
 ------------------------------------------------------------
 -- Packing

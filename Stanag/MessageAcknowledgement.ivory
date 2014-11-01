@@ -19,8 +19,9 @@ struct MessageAcknowledgement
 }
 
 
-uint32_t messageAcknowledgementMsgNum() { return 1400; }
-uint32_t messageAcknowledgementLength() { return 40; }
+uint32_t messageAcknowledgementMsgNum = 1400;
+uint32_t messageAcknowledgementMsgLen = 40;
+uint32_t messageAcknowledgementLength = 74;
 
 
 void messageAcknowledgement_unpack(*StanagBuf buf, * struct MessageAcknowledgement msg)
@@ -39,6 +40,17 @@ void messageAcknowledgement_unpack(*StanagBuf buf, * struct MessageAcknowledgeme
   store msg.originalMessageTimeStamp as unpackDouble(buf, 54);
   store msg.originalMessageInstanceId as unpackUint32(buf, 62);
   store msg.originalMessageType as unpackUint32(buf, 66);
+}
+
+
+void messageAcknowledgement_headerSet(* struct MessageAcknowledgement msg)
+{
+  store (&messageAcknowledgementInstance) as *(&messageAcknowledgementInstance) + 1;
+  store msg.messageInstance as *(&messageAcknowledgementInstance);
+  store msg.messageType as 1400;
+  store msg.messageLength as 40;
+  store msg.streamId as -1;
+  store msg.packetSequenceNumber as -1;
 }
 
 

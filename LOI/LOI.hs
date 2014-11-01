@@ -108,10 +108,15 @@ loiModule = package "loiModule" $ do
    defMemArea mActiveCucs
    defMemArea mLOIConfig
    defStruct (Proxy :: Proxy "StationStatus")
+   defStruct (Proxy :: Proxy "LOIConfig")
+   -- temp mem areas to be defined in their own modules later
+   defMemArea C.cucsAuthorisationRequestInstance
+   defMemArea V.vsmAuthorisationResponseInstance
+   defMemArea M.messageAcknowledgementInstance
 
 allModules :: [Module]
 allModules = [ loiloi, stanagpacking, loiModule, loiMapModule, M.stanagmessageacknowledgement, C.stanagcucsauthorisationrequest, V.stanagvsmauthorisationresponse ]
 
 
-main = void $ runCompiler allModules initialOpts { constFold = True, includeDir = "output", srcDir = "output"  }
+main = void $ runCompiler allModules initialOpts { constFold = True, includeDir = ".", srcDir = "."  }
 
