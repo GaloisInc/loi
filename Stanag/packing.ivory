@@ -1,7 +1,6 @@
 -- # -*- mode: haskell -*-
 
 include serializeModule
--- addfile "../ivory-serialize-0.1/support/ivory_serialize_prim.h"
 
 type Index = uint32_t;
 string struct Stanag 33

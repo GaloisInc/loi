@@ -20,7 +20,9 @@ module Main where
 
 import Ivory.Language
 import Ivory.Compile.C.CmdlineFrontend
-import Control.Monad
+import Ivory.Artifact
+
+import qualified Paths_ivory_serialize           as P
 
 import qualified Stanag.MessageAcknowledgement   as M
 import qualified Stanag.CucsAuthorisationRequest as C
@@ -115,8 +117,23 @@ loiModule = package "loiModule" $ do
    defMemArea M.messageAcknowledgementInstance
 
 allModules :: [Module]
-allModules = [ loiloi, stanagpacking, loiModule, loiMapModule, M.stanagmessageacknowledgement, C.stanagcucsauthorisationrequest, V.stanagvsmauthorisationresponse ]
+allModules = [ loiloi
+             , stanagpacking
+             , loiModule
+             , loiMapModule
+             , M.stanagmessageacknowledgement
+             , C.stanagcucsauthorisationrequest
+             , V.stanagvsmauthorisationresponse
+             ]
 
+serializeHdr =
+  artifactCabalFile P.getDataDir ("support/ivory_serialize_prim.h")
 
-main = void $ runCompiler allModules initialOpts { constFold = True, includeDir = ".", srcDir = "."  }
+main = runCompiler
+         allModules
+         [serializeHdr]
+         initialOpts
+         { constFold = True
+         , outDir = Just "out"
+         }
 
