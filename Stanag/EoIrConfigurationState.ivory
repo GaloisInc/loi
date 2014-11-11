@@ -26,70 +26,12 @@ struct EoIrConfigurationState
 }
 
 
+
+
 uint32_t eoIrConfigurationStateMsgNum = 301;
 uint32_t eoIrConfigurationStateMsgLen = 63;
 uint32_t eoIrConfigurationStateLength = 97;
 
-
-void eoIrConfigurationState_seteoIrTypeRevisionLevel(*struct EoIrConfigurationState msg, uint8_t val)
-{
-   -- add log calls here
-   if (val < 0) { return; } else {}
-   if (val > 255) { return; } else {}
-  store msg.eoIrTypeRevisionLevel as val;
-}
-
-void eoIrConfigurationState_seteoVerticalImageDimension(*struct EoIrConfigurationState msg, int16_t val)
-{
-  store msg.eoVerticalImageDimension as val;
-}
-
-void eoIrConfigurationState_seteoHorizontalImageDimension(*struct EoIrConfigurationState msg, int16_t val)
-{
-  store msg.eoHorizontalImageDimension as val;
-}
-
-void eoIrConfigurationState_setirVerticalImageDimension(*struct EoIrConfigurationState msg, int16_t val)
-{
-  store msg.irVerticalImageDimension as val;
-}
-
-void eoIrConfigurationState_setirHorizontalImageDimension(*struct EoIrConfigurationState msg, int16_t val)
-{
-  store msg.irHorizontalImageDimension as val;
-}
-
-void eoIrConfigurationState_setfieldOfRegardElevationMin(*struct EoIrConfigurationState msg, float val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.fieldOfRegardElevationMin as val;
-}
-
-void eoIrConfigurationState_setfieldOfRegardElevationMax(*struct EoIrConfigurationState msg, float val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.fieldOfRegardElevationMax as val;
-}
-
-void eoIrConfigurationState_setfieldOfRegardAzimuthMin(*struct EoIrConfigurationState msg, float val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.fieldOfRegardAzimuthMin as val;
-}
-
-void eoIrConfigurationState_setfieldOfRegardAzimuthMax(*struct EoIrConfigurationState msg, float val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.fieldOfRegardAzimuthMax as val;
-}
 
 void eoIrConfigurationState_unpack(*StanagBuf buf, * struct EoIrConfigurationState msg)
 {
@@ -114,6 +56,47 @@ void eoIrConfigurationState_unpack(*StanagBuf buf, * struct EoIrConfigurationSta
   store msg.fieldOfRegardElevationMax as unpackFloat(buf, 81);
   store msg.fieldOfRegardAzimuthMin as unpackFloat(buf, 85);
   store msg.fieldOfRegardAzimuthMax as unpackFloat(buf, 89);
+
+  if (msg->eoIrTypeRevisionLevel < 0) {
+     logger(2, "eoIrTypeRevisionLevel was below min");
+     store msg.eoIrTypeRevisionLevel as 0;
+  } else {}
+  if (msg->eoIrTypeRevisionLevel > 255) {
+     logger(2, "eoIrTypeRevisionLevel was above max");
+     store msg.eoIrTypeRevisionLevel as 255;
+  } else {}
+  if (msg->fieldOfRegardElevationMin < -pi) {
+     logger(2, "fieldOfRegardElevationMin was below min");
+     store msg.fieldOfRegardElevationMin as -pi;
+  } else {}
+  if (msg->fieldOfRegardElevationMin > pi) {
+     logger(2, "fieldOfRegardElevationMin was above max");
+     store msg.fieldOfRegardElevationMin as pi;
+  } else {}
+  if (msg->fieldOfRegardElevationMax < -pi) {
+     logger(2, "fieldOfRegardElevationMax was below min");
+     store msg.fieldOfRegardElevationMax as -pi;
+  } else {}
+  if (msg->fieldOfRegardElevationMax > pi) {
+     logger(2, "fieldOfRegardElevationMax was above max");
+     store msg.fieldOfRegardElevationMax as pi;
+  } else {}
+  if (msg->fieldOfRegardAzimuthMin < -pi) {
+     logger(2, "fieldOfRegardAzimuthMin was below min");
+     store msg.fieldOfRegardAzimuthMin as -pi;
+  } else {}
+  if (msg->fieldOfRegardAzimuthMin > pi) {
+     logger(2, "fieldOfRegardAzimuthMin was above max");
+     store msg.fieldOfRegardAzimuthMin as pi;
+  } else {}
+  if (msg->fieldOfRegardAzimuthMax < -pi) {
+     logger(2, "fieldOfRegardAzimuthMax was below min");
+     store msg.fieldOfRegardAzimuthMax as -pi;
+  } else {}
+  if (msg->fieldOfRegardAzimuthMax > pi) {
+     logger(2, "fieldOfRegardAzimuthMax was above max");
+     store msg.fieldOfRegardAzimuthMax as pi;
+  } else {}
 }
 
 
@@ -130,6 +113,47 @@ void eoIrConfigurationState_headerSet(* struct EoIrConfigurationState msg)
 
 void eoIrConfigurationState_pack(* struct EoIrConfigurationState msg, *StanagBuf buf)
 {
+  if (msg->eoIrTypeRevisionLevel < 0) {
+     logger(2, "eoIrTypeRevisionLevel was below min");
+     store msg.eoIrTypeRevisionLevel as 0;
+  } else {}
+  if (msg->eoIrTypeRevisionLevel > 255) {
+     logger(2, "eoIrTypeRevisionLevel was above max");
+     store msg.eoIrTypeRevisionLevel as 255;
+  } else {}
+  if (msg->fieldOfRegardElevationMin < -pi) {
+     logger(2, "fieldOfRegardElevationMin was below min");
+     store msg.fieldOfRegardElevationMin as -pi;
+  } else {}
+  if (msg->fieldOfRegardElevationMin > pi) {
+     logger(2, "fieldOfRegardElevationMin was above max");
+     store msg.fieldOfRegardElevationMin as pi;
+  } else {}
+  if (msg->fieldOfRegardElevationMax < -pi) {
+     logger(2, "fieldOfRegardElevationMax was below min");
+     store msg.fieldOfRegardElevationMax as -pi;
+  } else {}
+  if (msg->fieldOfRegardElevationMax > pi) {
+     logger(2, "fieldOfRegardElevationMax was above max");
+     store msg.fieldOfRegardElevationMax as pi;
+  } else {}
+  if (msg->fieldOfRegardAzimuthMin < -pi) {
+     logger(2, "fieldOfRegardAzimuthMin was below min");
+     store msg.fieldOfRegardAzimuthMin as -pi;
+  } else {}
+  if (msg->fieldOfRegardAzimuthMin > pi) {
+     logger(2, "fieldOfRegardAzimuthMin was above max");
+     store msg.fieldOfRegardAzimuthMin as pi;
+  } else {}
+  if (msg->fieldOfRegardAzimuthMax < -pi) {
+     logger(2, "fieldOfRegardAzimuthMax was below min");
+     store msg.fieldOfRegardAzimuthMax as -pi;
+  } else {}
+  if (msg->fieldOfRegardAzimuthMax > pi) {
+     logger(2, "fieldOfRegardAzimuthMax was above max");
+     store msg.fieldOfRegardAzimuthMax as pi;
+  } else {}
+
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);
   packUint32(msg->messageType, buf, 14);

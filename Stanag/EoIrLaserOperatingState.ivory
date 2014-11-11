@@ -36,68 +36,44 @@ struct EoIrLaserOperatingState
 }
 
 
+c_STOWED = 0x0;
+c_CAGED = 0x2;
+c_INITIALISING = 0x3;
+c_ACTIVE = 0x5;
+c_CALIBRATING = 0x6;
+c_BWMODE = 0x0;
+c_COLOURMODE = 0x1;
+c_BLACKHOT = 0x0;
+c_WHITEHOT = 0x1;
+c_NONE = 0x0;
+c_EO = 0x1;
+c_IR = 0x2;
+c_BOTH = 0x3;
+c_FIELDS1617AND18NOTVALID = 0x0;
+c_FIELDS1617AND18VALID = 0x1;
+c_ANGLERELATIVETOAV = 0x1;
+c_SLEWINGRATERELATIVETOINERTIAL = 0x3;
+c_LATLONGSLAVED = 0x4;
+c_SLEWINGRATERELATIVETOLATLONG = 0xA;
+c_SLEWINGACCELRELATIVETOINERTIAL = 0xB;
+c_SLEWINGACCELRELATIVETOLATLONG = 0xC;
+c_OPERATEINPREPLANNEDMODE = 0x0;
+c_OPERATEINMANUALMODE = 0x1;
+c_OFF = 0x0;
+c_ONNOTFIRING = 0x1;
+c_ONRECHARGING = 0x2;
+c_LASING = 0x3;
+c_LASERMASKED = 0x4;
+c_FIRST = 0x1;
+c_LAST = 0x2;
+c_ONDEACTIVATED = 0x1;
+c_ONACTIVATED = 0x2;
+
+
 uint32_t eoIrLaserOperatingStateMsgNum = 302;
 uint32_t eoIrLaserOperatingStateMsgLen = 77;
 uint32_t eoIrLaserOperatingStateLength = 111;
 
-
-void eoIrLaserOperatingState_setactualCentrelineElevationAngle(*struct EoIrLaserOperatingState msg, float val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.actualCentrelineElevationAngle as val;
-}
-
-void eoIrLaserOperatingState_setactualVerticalFieldOfView(*struct EoIrLaserOperatingState msg, float val)
-{
-  store msg.actualVerticalFieldOfView as val;
-}
-
-void eoIrLaserOperatingState_setactualCentrelineAzimuthAngle(*struct EoIrLaserOperatingState msg, float val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.actualCentrelineAzimuthAngle as val;
-}
-
-void eoIrLaserOperatingState_setactualHorizontalFieldOfView(*struct EoIrLaserOperatingState msg, float val)
-{
-  store msg.actualHorizontalFieldOfView as val;
-}
-
-void eoIrLaserOperatingState_setactualSensorRotationAngle(*struct EoIrLaserOperatingState msg, float val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.actualSensorRotationAngle as val;
-}
-
---void eoIrLaserOperatingState_setlatitudeOfImageCentre(*struct EoIrLaserOperatingState msg, double val)
---{
---   -- add log calls here
---   if (val < -pi/2.0) { return; } else {}
---   if (val > pi/2.0) { return; } else {}
---  store msg.latitudeOfImageCentre as val;
---}
-
-void eoIrLaserOperatingState_setlongitudeOfImageCentre(*struct EoIrLaserOperatingState msg, double val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.longitudeOfImageCentre as val;
-}
-
-void eoIrLaserOperatingState_setaltitude(*struct EoIrLaserOperatingState msg, float val)
-{
-   -- add log calls here
-   if (val < -1000) { return; } else {}
-   if (val > 100000) { return; } else {}
-  store msg.altitude as val;
-}
 
 void eoIrLaserOperatingState_unpack(*StanagBuf buf, * struct EoIrLaserOperatingState msg)
 {
@@ -132,6 +108,55 @@ void eoIrLaserOperatingState_unpack(*StanagBuf buf, * struct EoIrLaserOperatingS
   store msg.selectedLaserRangefinder as unpackUint8(buf, 103);
   store msg.laserDesignatorCode as unpackUint16(buf, 104);
   store msg.laserDesignatorStatus as unpackUint8(buf, 106);
+
+  if (msg->actualCentrelineElevationAngle < -pi) {
+     logger(2, "actualCentrelineElevationAngle was below min");
+     store msg.actualCentrelineElevationAngle as -pi;
+  } else {}
+  if (msg->actualCentrelineElevationAngle > pi) {
+     logger(2, "actualCentrelineElevationAngle was above max");
+     store msg.actualCentrelineElevationAngle as pi;
+  } else {}
+  if (msg->actualCentrelineAzimuthAngle < -pi) {
+     logger(2, "actualCentrelineAzimuthAngle was below min");
+     store msg.actualCentrelineAzimuthAngle as -pi;
+  } else {}
+  if (msg->actualCentrelineAzimuthAngle > pi) {
+     logger(2, "actualCentrelineAzimuthAngle was above max");
+     store msg.actualCentrelineAzimuthAngle as pi;
+  } else {}
+  if (msg->actualSensorRotationAngle < -pi) {
+     logger(2, "actualSensorRotationAngle was below min");
+     store msg.actualSensorRotationAngle as -pi;
+  } else {}
+  if (msg->actualSensorRotationAngle > pi) {
+     logger(2, "actualSensorRotationAngle was above max");
+     store msg.actualSensorRotationAngle as pi;
+  } else {}
+  if (msg->latitudeOfImageCentre < -pi/2) {
+     logger(2, "latitudeOfImageCentre was below min");
+     store msg.latitudeOfImageCentre as -pi/2;
+  } else {}
+  if (msg->latitudeOfImageCentre > pi/2) {
+     logger(2, "latitudeOfImageCentre was above max");
+     store msg.latitudeOfImageCentre as pi/2;
+  } else {}
+  if (msg->longitudeOfImageCentre < -pi) {
+     logger(2, "longitudeOfImageCentre was below min");
+     store msg.longitudeOfImageCentre as -pi;
+  } else {}
+  if (msg->longitudeOfImageCentre > pi) {
+     logger(2, "longitudeOfImageCentre was above max");
+     store msg.longitudeOfImageCentre as pi;
+  } else {}
+  if (msg->altitude < -1000) {
+     logger(2, "altitude was below min");
+     store msg.altitude as -1000;
+  } else {}
+  if (msg->altitude > 100000) {
+     logger(2, "altitude was above max");
+     store msg.altitude as 100000;
+  } else {}
 }
 
 
@@ -148,6 +173,55 @@ void eoIrLaserOperatingState_headerSet(* struct EoIrLaserOperatingState msg)
 
 void eoIrLaserOperatingState_pack(* struct EoIrLaserOperatingState msg, *StanagBuf buf)
 {
+  if (msg->actualCentrelineElevationAngle < -pi) {
+     logger(2, "actualCentrelineElevationAngle was below min");
+     store msg.actualCentrelineElevationAngle as -pi;
+  } else {}
+  if (msg->actualCentrelineElevationAngle > pi) {
+     logger(2, "actualCentrelineElevationAngle was above max");
+     store msg.actualCentrelineElevationAngle as pi;
+  } else {}
+  if (msg->actualCentrelineAzimuthAngle < -pi) {
+     logger(2, "actualCentrelineAzimuthAngle was below min");
+     store msg.actualCentrelineAzimuthAngle as -pi;
+  } else {}
+  if (msg->actualCentrelineAzimuthAngle > pi) {
+     logger(2, "actualCentrelineAzimuthAngle was above max");
+     store msg.actualCentrelineAzimuthAngle as pi;
+  } else {}
+  if (msg->actualSensorRotationAngle < -pi) {
+     logger(2, "actualSensorRotationAngle was below min");
+     store msg.actualSensorRotationAngle as -pi;
+  } else {}
+  if (msg->actualSensorRotationAngle > pi) {
+     logger(2, "actualSensorRotationAngle was above max");
+     store msg.actualSensorRotationAngle as pi;
+  } else {}
+  if (msg->latitudeOfImageCentre < -pi/2) {
+     logger(2, "latitudeOfImageCentre was below min");
+     store msg.latitudeOfImageCentre as -pi/2;
+  } else {}
+  if (msg->latitudeOfImageCentre > pi/2) {
+     logger(2, "latitudeOfImageCentre was above max");
+     store msg.latitudeOfImageCentre as pi/2;
+  } else {}
+  if (msg->longitudeOfImageCentre < -pi) {
+     logger(2, "longitudeOfImageCentre was below min");
+     store msg.longitudeOfImageCentre as -pi;
+  } else {}
+  if (msg->longitudeOfImageCentre > pi) {
+     logger(2, "longitudeOfImageCentre was above max");
+     store msg.longitudeOfImageCentre as pi;
+  } else {}
+  if (msg->altitude < -1000) {
+     logger(2, "altitude was below min");
+     store msg.altitude as -1000;
+  } else {}
+  if (msg->altitude > 100000) {
+     logger(2, "altitude was above max");
+     store msg.altitude as 100000;
+  } else {}
+
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);
   packUint32(msg->messageType, buf, 14);

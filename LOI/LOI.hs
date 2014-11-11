@@ -28,6 +28,7 @@ import qualified Stanag.MessageAcknowledgement   as M
 import qualified Stanag.CucsAuthorisationRequest as C
 import qualified Stanag.VsmAuthorisationResponse as V
 
+import Stanag.CucsAuthorisationRequest (c_LOI2, c_LOI3, c_LOI4, c_LOI5)
 import Stanag.EoIrConfigurationState (eoIrConfigurationStateMsgNum)
 import Stanag.EoIrLaserOperatingState (eoIrLaserOperatingStateMsgNum)
 import Stanag.EoIrLaserPayloadCommand (eoIrLaserPayloadCommandMsgNum)
@@ -37,24 +38,11 @@ import Stanag.PayloadSteeringCommand (payloadSteeringCommandMsgNum)
 
 import Stanag.Packing
 import Stanag.LOIMap
+import Util.Logger
+import Util.Time
 
 glueHeader :: String
 glueHeader = "loiglue.h"
-
-logger :: Def('[Sint32, IString] :-> ())
-logger = importProc "logger" glueHeader
-
-loggeri :: Def('[Sint32, IString, Sint32] :-> ())
-loggeri = importProc "loggeri" glueHeader
-
-loggerii :: Def('[Sint32, IString, Sint32, Sint32] :-> ())
-loggerii = importProc "loggerii" glueHeader
-
-loggeriii :: Def('[Sint32, IString, Sint32, Sint32, Sint32] :-> ())
-loggeriii = importProc "loggeriii" glueHeader
-
-timestamp :: Def('[] :-> IDouble)
-timestamp = importProc "timestamp" glueHeader
 
 sendToVehicle :: Def('[Ref s StanagBuf, Uint32] :-> ())
 sendToVehicle = importProc "sendToVehicle" glueHeader

@@ -26,6 +26,40 @@ struct EoIrLaserPayloadCommand
 }
 
 
+c_STOW = 0x0;
+c_CAGE = 0x2;
+c_INITIALISE = 0x3;
+c_STANDBY = 0x4;
+c_ACTIVE = 0x5;
+c_CALIBRATE = 0x6;
+c_BWMODE = 0x0;
+c_COLOURMODE = 0x1;
+c_BLACKHOT = 0x0;
+c_WHITEHOT = 0x1;
+c_NONE = 0x0;
+c_EO = 0x1;
+c_IR = 0x2;
+c_BOTH = 0x3;
+c_PAYLOADSPECIFIC = 0x4;
+c_ANGLERELATIVETOAV = 0x1;
+c_SLEWINGRATERELATIVETOINERTIAL = 0x3;
+c_LATLONGSLAVED = 0x4;
+c_SLEWINGRATERELATIVETOLATLONG = 0xA;
+c_SLEWINGACCELRELATIVETOINERTIAL = 0xB;
+c_SLEWINGACCELRELATIVETOLATLONG = 0xC;
+c_TURNOFF = 0x0;
+c_TURNONDONOTFIRE = 0x33;
+c_FIREONELASERPULSE = 0x55;
+c_FIRELASER = 0xEE;
+c_FIRST = 0x1;
+c_LAST = 0x2;
+c_TURNON = 0x33;
+c_DEACTIVATELASER = 0x44;
+c_ACTIVATELASER = 0x55;
+c_OPERATEINPREPLANNEDMODE = 0x0;
+c_OPERATEINMANUALMODE = 0x1;
+
+
 uint32_t eoIrLaserPayloadCommandMsgNum = 201;
 uint32_t eoIrLaserPayloadCommandMsgLen = 32;
 uint32_t eoIrLaserPayloadCommandLength = 66;
@@ -54,6 +88,7 @@ void eoIrLaserPayloadCommand_unpack(*StanagBuf buf, * struct EoIrLaserPayloadCom
   store msg.setLaserDesignatorCode as unpackUint16(buf, 58);
   store msg.initiateLaserDesignator as unpackUint8(buf, 60);
   store msg.preplanMode as unpackUint8(buf, 61);
+
 }
 
 
@@ -70,6 +105,7 @@ void eoIrLaserPayloadCommand_headerSet(* struct EoIrLaserPayloadCommand msg)
 
 void eoIrLaserPayloadCommand_pack(* struct EoIrLaserPayloadCommand msg, *StanagBuf buf)
 {
+
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);
   packUint32(msg->messageType, buf, 14);

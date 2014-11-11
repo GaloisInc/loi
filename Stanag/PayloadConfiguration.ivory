@@ -20,18 +20,14 @@ struct PayloadConfiguration
 }
 
 
+c_NO = 0x0;
+c_YES = 0x1;
+
+
 uint32_t payloadConfigurationMsgNum = 300;
 uint32_t payloadConfigurationMsgLen = 32;
 uint32_t payloadConfigurationLength = 66;
 
-
-void payloadConfiguration_setnumberOfPayloadRecordingDevices(*struct PayloadConfiguration msg, uint8_t val)
-{
-   -- add log calls here
-   if (val < 0) { return; } else {}
-   if (val > 255) { return; } else {}
-  store msg.numberOfPayloadRecordingDevices as val;
-}
 
 void payloadConfiguration_unpack(*StanagBuf buf, * struct PayloadConfiguration msg)
 {
@@ -50,6 +46,15 @@ void payloadConfiguration_unpack(*StanagBuf buf, * struct PayloadConfiguration m
   store msg.payloadType as unpackUint16(buf, 58);
   store msg.stationDoor as unpackUint8(buf, 60);
   store msg.numberOfPayloadRecordingDevices as unpackUint8(buf, 61);
+
+  if (msg->numberOfPayloadRecordingDevices < 0) {
+     logger(2, "numberOfPayloadRecordingDevices was below min");
+     store msg.numberOfPayloadRecordingDevices as 0;
+  } else {}
+  if (msg->numberOfPayloadRecordingDevices > 255) {
+     logger(2, "numberOfPayloadRecordingDevices was above max");
+     store msg.numberOfPayloadRecordingDevices as 255;
+  } else {}
 }
 
 
@@ -66,6 +71,15 @@ void payloadConfiguration_headerSet(* struct PayloadConfiguration msg)
 
 void payloadConfiguration_pack(* struct PayloadConfiguration msg, *StanagBuf buf)
 {
+  if (msg->numberOfPayloadRecordingDevices < 0) {
+     logger(2, "numberOfPayloadRecordingDevices was below min");
+     store msg.numberOfPayloadRecordingDevices as 0;
+  } else {}
+  if (msg->numberOfPayloadRecordingDevices > 255) {
+     logger(2, "numberOfPayloadRecordingDevices was above max");
+     store msg.numberOfPayloadRecordingDevices as 255;
+  } else {}
+
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);
   packUint32(msg->messageType, buf, 14);

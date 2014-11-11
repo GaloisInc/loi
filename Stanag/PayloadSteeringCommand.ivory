@@ -28,66 +28,23 @@ struct PayloadSteeringCommand
 }
 
 
+c_USESETHORIZONTALANDVERTICALFIELDOFVIEW = 0x0;
+c_XNOCHANGE = 0x1;
+c_ZOOMIN = 0x2;
+c_ZOOMOUT = 0x3;
+c_BAROALTITUDE = 0x1;
+c_WGS84 = 0x3;
+c_YNOCHANGE = 0x0;
+c_FOCUSCLOSER = 0x1;
+c_FOCUSFARTHER = 0x2;
+c_AUTO = 0x0;
+c_MANUAL = 0x1;
+
+
 uint32_t payloadSteeringCommandMsgNum = 200;
 uint32_t payloadSteeringCommandMsgLen = 68;
 uint32_t payloadSteeringCommandLength = 102;
 
-
-void payloadSteeringCommand_setsetCentrelineAzimuthAngle(*struct PayloadSteeringCommand msg, float val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.setCentrelineAzimuthAngle as val;
-}
-
-void payloadSteeringCommand_setsetCentrelineElevationAngle(*struct PayloadSteeringCommand msg, float val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.setCentrelineElevationAngle as val;
-}
-
-void payloadSteeringCommand_setsetHorizontalFieldOfView(*struct PayloadSteeringCommand msg, float val)
-{
-   -- add log calls here
-   if (val < 0) { return; } else {}
-   if (val > 2*pi) { return; } else {}
-  store msg.setHorizontalFieldOfView as val;
-}
-
-void payloadSteeringCommand_setsetVerticalFieldOfView(*struct PayloadSteeringCommand msg, float val)
-{
-   -- add log calls here
-   if (val < 0) { return; } else {}
-   if (val > 2*pi) { return; } else {}
-  store msg.setVerticalFieldOfView as val;
-}
-
---void payloadSteeringCommand_setlatitude(*struct PayloadSteeringCommand msg, double val)
---{
---   -- add log calls here
---   if (val < (-pi / 2.0)) { return; } else {}
---   if (val > (pi / 2.0)) { return; } else {}
---  store msg.latitude as val;
---}
-
-void payloadSteeringCommand_setlongitude(*struct PayloadSteeringCommand msg, double val)
-{
-   -- add log calls here
-   if (val < -pi) { return; } else {}
-   if (val > pi) { return; } else {}
-  store msg.longitude as val;
-}
-
-void payloadSteeringCommand_setaltitude(*struct PayloadSteeringCommand msg, float val)
-{
-   -- add log calls here
-   if (val < -1000) { return; } else {}
-   if (val > 100000) { return; } else {}
-  store msg.altitude as val;
-}
 
 void payloadSteeringCommand_unpack(*StanagBuf buf, * struct PayloadSteeringCommand msg)
 {
@@ -114,6 +71,63 @@ void payloadSteeringCommand_unpack(*StanagBuf buf, * struct PayloadSteeringComma
   store msg.altitudeType as unpackUint8(buf, 95);
   store msg.setFocus as unpackUint8(buf, 96);
   store msg.focusType as unpackUint8(buf, 97);
+
+  if (msg->setCentrelineAzimuthAngle < -pi) {
+     logger(2, "setCentrelineAzimuthAngle was below min");
+     store msg.setCentrelineAzimuthAngle as -pi;
+  } else {}
+  if (msg->setCentrelineAzimuthAngle > pi) {
+     logger(2, "setCentrelineAzimuthAngle was above max");
+     store msg.setCentrelineAzimuthAngle as pi;
+  } else {}
+  if (msg->setCentrelineElevationAngle < -pi) {
+     logger(2, "setCentrelineElevationAngle was below min");
+     store msg.setCentrelineElevationAngle as -pi;
+  } else {}
+  if (msg->setCentrelineElevationAngle > pi) {
+     logger(2, "setCentrelineElevationAngle was above max");
+     store msg.setCentrelineElevationAngle as pi;
+  } else {}
+  if (msg->setHorizontalFieldOfView < 0) {
+     logger(2, "setHorizontalFieldOfView was below min");
+     store msg.setHorizontalFieldOfView as 0;
+  } else {}
+  if (msg->setHorizontalFieldOfView > 2*pi) {
+     logger(2, "setHorizontalFieldOfView was above max");
+     store msg.setHorizontalFieldOfView as 2*pi;
+  } else {}
+  if (msg->setVerticalFieldOfView < 0) {
+     logger(2, "setVerticalFieldOfView was below min");
+     store msg.setVerticalFieldOfView as 0;
+  } else {}
+  if (msg->setVerticalFieldOfView > 2*pi) {
+     logger(2, "setVerticalFieldOfView was above max");
+     store msg.setVerticalFieldOfView as 2*pi;
+  } else {}
+  if (msg->latitude < -pi/2) {
+     logger(2, "latitude was below min");
+     store msg.latitude as -pi/2;
+  } else {}
+  if (msg->latitude > pi/2) {
+     logger(2, "latitude was above max");
+     store msg.latitude as pi/2;
+  } else {}
+  if (msg->longitude < -pi) {
+     logger(2, "longitude was below min");
+     store msg.longitude as -pi;
+  } else {}
+  if (msg->longitude > pi) {
+     logger(2, "longitude was above max");
+     store msg.longitude as pi;
+  } else {}
+  if (msg->altitude < -1000) {
+     logger(2, "altitude was below min");
+     store msg.altitude as -1000;
+  } else {}
+  if (msg->altitude > 100000) {
+     logger(2, "altitude was above max");
+     store msg.altitude as 100000;
+  } else {}
 }
 
 
@@ -130,6 +144,63 @@ void payloadSteeringCommand_headerSet(* struct PayloadSteeringCommand msg)
 
 void payloadSteeringCommand_pack(* struct PayloadSteeringCommand msg, *StanagBuf buf)
 {
+  if (msg->setCentrelineAzimuthAngle < -pi) {
+     logger(2, "setCentrelineAzimuthAngle was below min");
+     store msg.setCentrelineAzimuthAngle as -pi;
+  } else {}
+  if (msg->setCentrelineAzimuthAngle > pi) {
+     logger(2, "setCentrelineAzimuthAngle was above max");
+     store msg.setCentrelineAzimuthAngle as pi;
+  } else {}
+  if (msg->setCentrelineElevationAngle < -pi) {
+     logger(2, "setCentrelineElevationAngle was below min");
+     store msg.setCentrelineElevationAngle as -pi;
+  } else {}
+  if (msg->setCentrelineElevationAngle > pi) {
+     logger(2, "setCentrelineElevationAngle was above max");
+     store msg.setCentrelineElevationAngle as pi;
+  } else {}
+  if (msg->setHorizontalFieldOfView < 0) {
+     logger(2, "setHorizontalFieldOfView was below min");
+     store msg.setHorizontalFieldOfView as 0;
+  } else {}
+  if (msg->setHorizontalFieldOfView > 2*pi) {
+     logger(2, "setHorizontalFieldOfView was above max");
+     store msg.setHorizontalFieldOfView as 2*pi;
+  } else {}
+  if (msg->setVerticalFieldOfView < 0) {
+     logger(2, "setVerticalFieldOfView was below min");
+     store msg.setVerticalFieldOfView as 0;
+  } else {}
+  if (msg->setVerticalFieldOfView > 2*pi) {
+     logger(2, "setVerticalFieldOfView was above max");
+     store msg.setVerticalFieldOfView as 2*pi;
+  } else {}
+  if (msg->latitude < -pi/2) {
+     logger(2, "latitude was below min");
+     store msg.latitude as -pi/2;
+  } else {}
+  if (msg->latitude > pi/2) {
+     logger(2, "latitude was above max");
+     store msg.latitude as pi/2;
+  } else {}
+  if (msg->longitude < -pi) {
+     logger(2, "longitude was below min");
+     store msg.longitude as -pi;
+  } else {}
+  if (msg->longitude > pi) {
+     logger(2, "longitude was above max");
+     store msg.longitude as pi;
+  } else {}
+  if (msg->altitude < -1000) {
+     logger(2, "altitude was below min");
+     store msg.altitude as -1000;
+  } else {}
+  if (msg->altitude > 100000) {
+     logger(2, "altitude was above max");
+     store msg.altitude as 100000;
+  } else {}
+
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);
   packUint32(msg->messageType, buf, 14);

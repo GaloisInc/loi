@@ -22,18 +22,22 @@ struct CucsAuthorisationRequest
 }
 
 
+uint8_t c_LOI2 = 0x01;
+uint8_t c_LOI3 = 0x02;
+uint8_t c_LOI4 = 0x04;
+uint8_t c_LOI5 = 0x08;
+
+uint8_t c_RELINQUISHHANDOFFCONTROL = 0x0;
+uint8_t c_REQUESTCONTROL = 0x1;
+uint8_t c_OVERRIDECONTROL = 0x2;
+
+c_DONTWAIT = 0x0;
+c_WAITFORMESSAGE = 0x1;
+
 uint32_t cucsAuthorisationRequestMsgNum = 1;
 uint32_t cucsAuthorisationRequestMsgLen = 35;
 uint32_t cucsAuthorisationRequestLength = 69;
 
-
-void cucsAuthorisationRequest_setvehicleSubtype(*struct CucsAuthorisationRequest msg, uint16_t val)
-{
-   -- add log calls here
-   if (val < 0) { return; } else {}
-   if (val > 32767) { return; } else {}
-  store msg.vehicleSubtype as val;
-}
 
 void cucsAuthorisationRequest_unpack(*StanagBuf buf, * struct CucsAuthorisationRequest msg)
 {
@@ -54,6 +58,15 @@ void cucsAuthorisationRequest_unpack(*StanagBuf buf, * struct CucsAuthorisationR
   store msg.controlledStation as unpackUint32(buf, 59);
   store msg.controlledStationMode as unpackUint8(buf, 63);
   store msg.waitForCoordination as unpackUint8(buf, 64);
+
+  if (msg->vehicleSubtype < 0) {
+     logger(2, "vehicleSubtype was below min");
+     store msg.vehicleSubtype as 0;
+  } else {}
+  if (msg->vehicleSubtype > 32767) {
+     logger(2, "vehicleSubtype was above max");
+     store msg.vehicleSubtype as 32767;
+  } else {}
 }
 
 
@@ -70,6 +83,15 @@ void cucsAuthorisationRequest_headerSet(* struct CucsAuthorisationRequest msg)
 
 void cucsAuthorisationRequest_pack(* struct CucsAuthorisationRequest msg, *StanagBuf buf)
 {
+  if (msg->vehicleSubtype < 0) {
+     logger(2, "vehicleSubtype was below min");
+     store msg.vehicleSubtype as 0;
+  } else {}
+  if (msg->vehicleSubtype > 32767) {
+     logger(2, "vehicleSubtype was above max");
+     store msg.vehicleSubtype as 32767;
+  } else {}
+
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);
   packUint32(msg->messageType, buf, 14);

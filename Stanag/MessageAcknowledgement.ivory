@@ -24,6 +24,25 @@ uint32_t messageAcknowledgementMsgLen = 40;
 uint32_t messageAcknowledgementLength = 74;
 
 
+--void messageAcknowledgementCreateFrom(*StanagBuf msgbuf, *StanagBuf buf, int32_t myid)
+--{
+--	alloc ack{};
+--
+--	store ack.originalMessageTimeStamp as msg->C.timeStamp;
+--	store ack.originalMessageInstanceId as msg->C.messageInstance;
+--	store ack.originalMessageType as msg->C.messageType;
+--	store ack.cucsId as msg->C.cucsId;
+--	store ack.timeStamp as timestamp(); -- double timestamp
+--	store ack.vehicleId as myid;
+--	store ack.vsmId as myid;
+--
+--	messageAcknowledgement_headerSet(ack);
+--	messageAcknowledgement_pack(ack, buf);
+--	placeChecksum(buf, messageAcknowledgementLength);
+--	sendToCucs(buf, messageAcknowledgementLength);
+--}
+
+
 void messageAcknowledgement_unpack(*StanagBuf buf, * struct MessageAcknowledgement msg)
 {
   unpackStanagString(msg.idd, buf, 0, 10);

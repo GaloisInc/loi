@@ -8,18 +8,6 @@ include M.stanagmessageacknowledgement
 
 -- LOI implementation in Ivory
 
-g_STANAG_BROADCAST_ID = -1;
-g_RELINQUISH_CONTROL = 0;
-g_TAKE_CONTROL = 1;
-g_RELINQUISH_HANDOFF_CONTROL = 0;
-g_REQUEST_CONTROL = 1;
-g_OVERRIDE_CONTROL = 2;
-
-c_LOI2 = 0x01;
-c_LOI3 = 0x02;
-c_LOI4 = 0x04;
-c_LOI5 = 0x08;
-
 int32_t findResponse(int32_t cucsID) {
   map ix {
 	if ((&mActiveCucs)@ix -> V.cucsId == cucsID) {
@@ -28,7 +16,6 @@ int32_t findResponse(int32_t cucsID) {
   }
   return -1;
 }
-
 
 int32_t getActiveCUCSCount() 
 {
@@ -194,7 +181,7 @@ void loiProcessOutgoing(*StanagBuf buf, uint32_t size)
 	let msgType = stanagGetType(buf); 
 	let required = requiredLOI(msgType);
 
-	if ( cucsId == g_STANAG_BROADCAST_ID )
+	if ( cucsId == c_STANAG_BROADCAST_ID )
 	{
 		let checksum = unpackUint32(buf, size-4);
 
@@ -213,7 +200,7 @@ void loiProcessOutgoing(*StanagBuf buf, uint32_t size)
 				{
 					let uint32_t byte = safeCast(ii)*8;
 					let uint32_t mask = 0x0FF;
-					store newchecksum as *newchecksum - ((twosCompRep(g_STANAG_BROADCAST_ID) >> byte) & mask); -- remove old broadcast char
+					store newchecksum as *newchecksum - ((twosCompRep(c_STANAG_BROADCAST_ID) >> byte) & mask); -- remove old broadcast char
 					store newchecksum as *newchecksum + ((twosCompRep(newCucsId) >> byte) & mask);   -- add new cucsID char
 				}
 
@@ -273,7 +260,7 @@ void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseInde
 	if ((authIdxx < 0) || (request->C.cucsId == (&mActiveCucs)@toIx(authIdxx)->V.cucsId))
 	{
 		-- allows a new CUCS to obtain control or the controlling CUCS to change between override and request mode
-		store (&mStations)@stationIndex.overriden as (request->C.controlledStationMode == g_OVERRIDE_CONTROL);
+		store (&mStations)@stationIndex.overriden as (request->C.controlledStationMode == C.c_OVERRIDECONTROL);
 		if ( authIdxx < 0 ) {
 			store update as true;
 		} else {}
@@ -283,7 +270,7 @@ void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseInde
 		-- can we override another CUCS control?
 		let resp = (&mActiveCucs)@toIx(authIdxx);
 
-		if ((g_OVERRIDE_CONTROL == request->C.controlledStationMode) && !(&mStations)@stationIndex->overriden)
+		if ((C.c_OVERRIDECONTROL == request->C.controlledStationMode) && !(&mStations)@stationIndex->overriden)
 		{
 			store (&mStations)@stationIndex.overriden as true;
 			store update as true;
@@ -299,14 +286,14 @@ void requestLOI3(* struct CucsAuthorisationRequest request, CucsIdx responseInde
 			} else {}
 
 			store resp.V.loiAuthorized as 0;
-			store resp.V.controlledStationMode as g_RELINQUISH_CONTROL;
+			store resp.V.controlledStationMode as V.c_RELINQUISHCONTROL;
 
 			-- Notify former CUCS it has lost control of this station.
 			alloc authResp{};
 			memcpy authResp resp;
 			store authResp.V.loiGranted as c_LOI3;
 			store authResp.V.controlledStation as (1 << safeCast(stationIndex));
-			store authResp.V.controlledStationMode as g_RELINQUISH_CONTROL;
+			store authResp.V.controlledStationMode as V.c_RELINQUISHCONTROL;
 			sendAuthorisationResponse( authResp );
 
 			loggeriii(1, "LOI: CUCS 0x%08X snatched LOI 3 Station #%d from CUCS 0x%08X", (&mActiveCucs)@responseIndex->V.cucsId, safeCast(stationIndex)+1, resp->V.cucsId);
@@ -334,7 +321,7 @@ void requestLOI45(* struct CucsAuthorisationRequest request, CucsIdx responseInd
 	if ((&mVehicle)->authIdx < 0)
 	{
 		store (&mVehicle).authIdx as safeCast(responseIndex);
-		store (&mVehicle).overriden as (g_OVERRIDE_CONTROL == request->C.controlledStationMode);
+		store (&mVehicle).overriden as (C.c_OVERRIDECONTROL == request->C.controlledStationMode);
 		store cur.V.loiGranted as cur->V.loiGranted | requestedLOI;
 		return;
 	}
@@ -347,27 +334,27 @@ void requestLOI45(* struct CucsAuthorisationRequest request, CucsIdx responseInd
 			store cur.V.loiGranted as safeCast(cur->V.loiGranted) & ~(c_LOI4|c_LOI5);
 		} else {}
 		loggerii(1, "LOI: CUCS 0x%08X changed LOI45, now at 0x%X", cur->V.cucsId, safeCast(requestedLOI));
-		store (&mVehicle).overriden as (g_OVERRIDE_CONTROL == request->C.controlledStationMode);
+		store (&mVehicle).overriden as (C.c_OVERRIDECONTROL == request->C.controlledStationMode);
 		store cur.V.loiGranted as cur->V.loiGranted | requestedLOI;
 		return;
 	} else {}
 
 	-- a cucs has control, can the requesting cucs override?
-	if ((request->C.controlledStationMode == g_OVERRIDE_CONTROL) && !(&mVehicle)->overriden)
+	if ((request->C.controlledStationMode == C.c_OVERRIDECONTROL) && !(&mVehicle)->overriden)
 	{
 		store (&mVehicle).overriden as true;
 
 		-- Update the authorization table entry for the CUCS which was overridden.
 		store cur.V.loiAuthorized as 0;
 		store cur.V.loiGranted as (safeCast(cur->V.loiGranted) & ~requestedLOI);
-		store cur.V.controlledStationMode as g_RELINQUISH_CONTROL;
+		store cur.V.controlledStationMode as V.c_RELINQUISHCONTROL;
 
 		-- notify former CUCS in control of loss of LOI 4
 		alloc authResp{};
 		memcpy authResp cur;
 		store authResp.V.loiGranted as requestedLOI;
 		store authResp.V.controlledStation as 0;
-		store authResp.V.controlledStationMode as g_RELINQUISH_CONTROL;
+		store authResp.V.controlledStationMode as V.c_RELINQUISHCONTROL;
 		sendAuthorisationResponse( authResp );
 
 		loggerii(1, "LOI: CUCS 0x%08X snatched LOI45 from CUCS 0x%08X", (&mActiveCucs)@responseIndex->V.cucsId, cur->V.cucsId);
@@ -447,7 +434,7 @@ void dropLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 	} else {
 		store authResp.V.controlledStation as 0;
 	}
-	store authResp.V.controlledStationMode as g_RELINQUISH_CONTROL;
+	store authResp.V.controlledStationMode as V.c_RELINQUISHCONTROL;
 	sendAuthorisationResponse( authResp );
 
 	if ( prevgranted != cur->V.loiGranted )
@@ -500,7 +487,7 @@ void requestLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 	} else {}
 
 	-- Respond with the overall LOIs/stations granted.
-	store cur.V.controlledStationMode as g_TAKE_CONTROL;
+	store cur.V.controlledStationMode as V.c_TAKECONTROL;
 	sendAuthorisationResponse( cur );
 
 	if ( prevgranted != cur->V.loiGranted )
@@ -515,12 +502,12 @@ void requestLOI(* struct CucsAuthorisationRequest request, CucsIdx responseIdx)
 void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest request)
 {
 	let cucsId = request->C.cucsId;
-	if ((cucsId == 0) || (cucsId == g_STANAG_BROADCAST_ID)) {
+	if ((cucsId == 0) || (cucsId == c_STANAG_BROADCAST_ID)) {
 		return;
 	} else {}
 
 	-- Check for a broadcast message
-	if (g_STANAG_BROADCAST_ID == request->C.vehicleId)
+	if (c_STANAG_BROADCAST_ID == request->C.vehicleId)
 	{
 		alloc authResp{};
 		let responseIdx = findResponse(cucsId);
@@ -546,7 +533,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 		{
 			-- If CUCS is authorized to some level, respond with authorized LOIs/stations.
 			store authResp.V.loiGranted as 0;
-			store authResp.V.controlledStationMode as g_TAKE_CONTROL;
+			store authResp.V.controlledStationMode as V.c_TAKECONTROL;
 			sendAuthorisationResponse( authResp );
 			loggerii(1, "LOI: CUCS 0x%08X is authorized for 0x%X", authResp->V.cucsId, safeCast(authResp->V.loiAuthorized));
 		}
@@ -558,8 +545,8 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 	else -- Message was sent directly to this VSM.
 	{
 		-- only let custom CUCS use OVERRIDE, ULB specific behaviour
-		if (( g_OVERRIDE_CONTROL == request->C.controlledStationMode ) && ( (0x00800000 & twosCompRep(request->C.cucsId)) == 0 )) {
-				store request.C.controlledStationMode as g_REQUEST_CONTROL;
+		if (( C.c_OVERRIDECONTROL == request->C.controlledStationMode ) && ( (0x00800000 & twosCompRep(request->C.cucsId)) == 0 )) {
+				store request.C.controlledStationMode as C.c_REQUESTCONTROL;
 		} else {}
 
 		-- if CUCS isn't registered with us yet and they are requesting something, create an entry for them
@@ -591,7 +578,7 @@ void handleStanagCucsAuthorisationRequest(* struct CucsAuthorisationRequest requ
 		store (&mActiveCucs)@idx.V.loiAuthorized as generateAuthorized((&mActiveCucs)@idx->V.cucsId);
 
 		-- Resolve the authorization request.
-		if (g_RELINQUISH_HANDOFF_CONTROL == request->C.controlledStationMode) {
+		if (C.c_RELINQUISHHANDOFFCONTROL == request->C.controlledStationMode) {
 			dropLOI(request, toIx(*responseIdx));
 		} else {
 			requestLOI(request, toIx(*responseIdx));

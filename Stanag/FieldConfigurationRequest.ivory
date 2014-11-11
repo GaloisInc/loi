@@ -21,18 +21,23 @@ struct FieldConfigurationRequest
 }
 
 
+c_SINGLEPARAMETER = 0x0;
+c_LOI2 = 0x1;
+c_LOI3 = 0x2;
+c_LOI4 = 0x3;
+c_LOI5 = 0x4;
+c_DATALINK = 0x5;
+c_ABORTCONFIGURATION = 0x6;
+c_NA = 0x0;
+c_SENSOR1 = 0x1;
+c_SENSOR2 = 0x2;
+c_SENSOR3 = 0x3;
+
+
 uint32_t fieldConfigurationRequestMsgNum = 1200;
 uint32_t fieldConfigurationRequestMsgLen = 35;
 uint32_t fieldConfigurationRequestLength = 69;
 
-
-void fieldConfigurationRequest_setrequestedField(*struct FieldConfigurationRequest msg, uint8_t val)
-{
-   -- add log calls here
-   if (val < 1) { return; } else {}
-   if (val > 255) { return; } else {}
-  store msg.requestedField as val;
-}
 
 void fieldConfigurationRequest_unpack(*StanagBuf buf, * struct FieldConfigurationRequest msg)
 {
@@ -52,6 +57,15 @@ void fieldConfigurationRequest_unpack(*StanagBuf buf, * struct FieldConfiguratio
   store msg.requestedField as unpackUint8(buf, 59);
   store msg.stationNumber as unpackUint32(buf, 60);
   store msg.sensorSelect as unpackUint8(buf, 64);
+
+  if (msg->requestedField < 1) {
+     logger(2, "requestedField was below min");
+     store msg.requestedField as 1;
+  } else {}
+  if (msg->requestedField > 255) {
+     logger(2, "requestedField was above max");
+     store msg.requestedField as 255;
+  } else {}
 }
 
 
@@ -68,6 +82,15 @@ void fieldConfigurationRequest_headerSet(* struct FieldConfigurationRequest msg)
 
 void fieldConfigurationRequest_pack(* struct FieldConfigurationRequest msg, *StanagBuf buf)
 {
+  if (msg->requestedField < 1) {
+     logger(2, "requestedField was below min");
+     store msg.requestedField as 1;
+  } else {}
+  if (msg->requestedField > 255) {
+     logger(2, "requestedField was above max");
+     store msg.requestedField as 255;
+  } else {}
+
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);
   packUint32(msg->messageType, buf, 14);

@@ -9,9 +9,10 @@ string struct Stanaglong 400
 ------------------------------------------------------------
 -- Common Fields
 
-c_TYPE_OFFSET = 14;
-c_VEHICLEID_OFFSET = 38;
-c_CUCS_OFFSET = 42;
+ int32_t c_STANAG_BROADCAST_ID = -1;
+uint32_t c_TYPE_OFFSET = 14;
+uint32_t c_VEHICLEID_OFFSET = 38;
+uint32_t c_CUCS_OFFSET = 42;
 
 uint32_t stanagGetType(*StanagBuf buf) { return unpackUint32(buf, c_TYPE_OFFSET); }
  int32_t stanagGetVehicleId(*StanagBuf buf) { return unpackInt32(buf, c_VEHICLEID_OFFSET); }

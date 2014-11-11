@@ -22,18 +22,17 @@ struct VsmAuthorisationResponse
 }
 
 
+uint8_t c_RELINQUISHCONTROL = 0;
+uint8_t c_TAKECONTROL = 1;
+
+c_NOTINCONTROL = 0x0;
+c_INCONTROL = 0x1;
+
+
 uint32_t vsmAuthorisationResponseMsgNum = 21;
 uint32_t vsmAuthorisationResponseMsgLen = 35;
 uint32_t vsmAuthorisationResponseLength = 69;
 
-
-void vsmAuthorisationResponse_setvehicleSubtype(*struct VsmAuthorisationResponse msg, uint16_t val)
-{
-   -- add log calls here
-   if (val < 0) { return; } else {}
-   if (val > 65535) { return; } else {}
-  store msg.vehicleSubtype as val;
-}
 
 void vsmAuthorisationResponse_unpack(*StanagBuf buf, * struct VsmAuthorisationResponse msg)
 {
@@ -54,6 +53,15 @@ void vsmAuthorisationResponse_unpack(*StanagBuf buf, * struct VsmAuthorisationRe
   store msg.controlledStationMode as unpackUint8(buf, 60);
   store msg.vehicleType as unpackUint16(buf, 61);
   store msg.vehicleSubtype as unpackUint16(buf, 63);
+
+  if (msg->vehicleSubtype < 0) {
+     logger(2, "vehicleSubtype was below min");
+     store msg.vehicleSubtype as 0;
+  } else {}
+  if (msg->vehicleSubtype > 65535) {
+     logger(2, "vehicleSubtype was above max");
+     store msg.vehicleSubtype as 65535;
+  } else {}
 }
 
 
@@ -70,6 +78,15 @@ void vsmAuthorisationResponse_headerSet(* struct VsmAuthorisationResponse msg)
 
 void vsmAuthorisationResponse_pack(* struct VsmAuthorisationResponse msg, *StanagBuf buf)
 {
+  if (msg->vehicleSubtype < 0) {
+     logger(2, "vehicleSubtype was below min");
+     store msg.vehicleSubtype as 0;
+  } else {}
+  if (msg->vehicleSubtype > 65535) {
+     logger(2, "vehicleSubtype was above max");
+     store msg.vehicleSubtype as 65535;
+  } else {}
+
   packStanagString(msg.idd, buf, 0, 10);
   packUint32(msg->messageInstance, buf, 10);
   packUint32(msg->messageType, buf, 14);
