@@ -1,0 +1,184 @@
+include stanagpacking
+
+struct EoIrLaserOperatingState
+{
+ struct ivory_string_Stanag idd;
+ uint32_t messageInstance;
+ uint32_t messageType;
+ int32_t messageLength;
+ int32_t streamId;
+ int32_t packetSequenceNumber;
+ double timeStamp;
+ int32_t vehicleId;
+ int32_t cucsId;
+ uint32_t stationNumber;
+ uint8_t addressedSensor;
+ uint8_t systemOperatingModeState;
+ uint8_t eoCameraStatus;
+ uint8_t irPolarityStatus;
+ uint8_t imageOutputState;
+ float actualCentrelineElevationAngle;
+ float actualVerticalFieldOfView;
+ float actualCentrelineAzimuthAngle;
+ float actualHorizontalFieldOfView;
+ float actualSensorRotationAngle;
+ uint8_t imagePosition;
+ double latitudeOfImageCentre;
+ double longitudeOfImageCentre;
+ float altitude;
+ uint8_t pointingModeState;
+ uint8_t preplanMode;
+ float reportedRange;
+ uint8_t laserPointerRangefinderStatus;
+ uint8_t selectedLaserRangefinder;
+ uint16_t laserDesignatorCode;
+ uint8_t laserDesignatorStatus;
+}
+
+
+uint32_t eoIrLaserOperatingStateMsgNum = 302;
+uint32_t eoIrLaserOperatingStateMsgLen = 77;
+uint32_t eoIrLaserOperatingStateLength = 111;
+
+
+void eoIrLaserOperatingState_setactualCentrelineElevationAngle(*struct EoIrLaserOperatingState msg, float val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.actualCentrelineElevationAngle as val;
+}
+
+void eoIrLaserOperatingState_setactualVerticalFieldOfView(*struct EoIrLaserOperatingState msg, float val)
+{
+  store msg.actualVerticalFieldOfView as val;
+}
+
+void eoIrLaserOperatingState_setactualCentrelineAzimuthAngle(*struct EoIrLaserOperatingState msg, float val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.actualCentrelineAzimuthAngle as val;
+}
+
+void eoIrLaserOperatingState_setactualHorizontalFieldOfView(*struct EoIrLaserOperatingState msg, float val)
+{
+  store msg.actualHorizontalFieldOfView as val;
+}
+
+void eoIrLaserOperatingState_setactualSensorRotationAngle(*struct EoIrLaserOperatingState msg, float val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.actualSensorRotationAngle as val;
+}
+
+--void eoIrLaserOperatingState_setlatitudeOfImageCentre(*struct EoIrLaserOperatingState msg, double val)
+--{
+--   -- add log calls here
+--   if (val < -pi/2.0) { return; } else {}
+--   if (val > pi/2.0) { return; } else {}
+--  store msg.latitudeOfImageCentre as val;
+--}
+
+void eoIrLaserOperatingState_setlongitudeOfImageCentre(*struct EoIrLaserOperatingState msg, double val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.longitudeOfImageCentre as val;
+}
+
+void eoIrLaserOperatingState_setaltitude(*struct EoIrLaserOperatingState msg, float val)
+{
+   -- add log calls here
+   if (val < -1000) { return; } else {}
+   if (val > 100000) { return; } else {}
+  store msg.altitude as val;
+}
+
+void eoIrLaserOperatingState_unpack(*StanagBuf buf, * struct EoIrLaserOperatingState msg)
+{
+  unpackStanagString(msg.idd, buf, 0, 10);
+  store msg.messageInstance as unpackUint32(buf, 10);
+  store msg.messageType as unpackUint32(buf, 14);
+  store msg.messageLength as unpackInt32(buf, 18);
+  store msg.streamId as unpackInt32(buf, 22);
+  store msg.packetSequenceNumber as unpackInt32(buf, 26);
+  store msg.timeStamp as unpackDouble(buf, 30);
+  store msg.vehicleId as unpackInt32(buf, 38);
+  store msg.cucsId as unpackInt32(buf, 42);
+  store msg.stationNumber as unpackUint32(buf, 46);
+  store msg.addressedSensor as unpackUint8(buf, 50);
+  store msg.systemOperatingModeState as unpackUint8(buf, 51);
+  store msg.eoCameraStatus as unpackUint8(buf, 52);
+  store msg.irPolarityStatus as unpackUint8(buf, 53);
+  store msg.imageOutputState as unpackUint8(buf, 54);
+  store msg.actualCentrelineElevationAngle as unpackFloat(buf, 55);
+  store msg.actualVerticalFieldOfView as unpackFloat(buf, 59);
+  store msg.actualCentrelineAzimuthAngle as unpackFloat(buf, 63);
+  store msg.actualHorizontalFieldOfView as unpackFloat(buf, 67);
+  store msg.actualSensorRotationAngle as unpackFloat(buf, 71);
+  store msg.imagePosition as unpackUint8(buf, 75);
+  store msg.latitudeOfImageCentre as unpackDouble(buf, 76);
+  store msg.longitudeOfImageCentre as unpackDouble(buf, 84);
+  store msg.altitude as unpackFloat(buf, 92);
+  store msg.pointingModeState as unpackUint8(buf, 96);
+  store msg.preplanMode as unpackUint8(buf, 97);
+  store msg.reportedRange as unpackFloat(buf, 98);
+  store msg.laserPointerRangefinderStatus as unpackUint8(buf, 102);
+  store msg.selectedLaserRangefinder as unpackUint8(buf, 103);
+  store msg.laserDesignatorCode as unpackUint16(buf, 104);
+  store msg.laserDesignatorStatus as unpackUint8(buf, 106);
+}
+
+
+void eoIrLaserOperatingState_headerSet(* struct EoIrLaserOperatingState msg)
+{
+  store (&eoIrLaserOperatingStateInstance) as *(&eoIrLaserOperatingStateInstance) + 1;
+  store msg.messageInstance as *(&eoIrLaserOperatingStateInstance);
+  store msg.messageType as 302;
+  store msg.messageLength as 77;
+  store msg.streamId as -1;
+  store msg.packetSequenceNumber as -1;
+}
+
+
+void eoIrLaserOperatingState_pack(* struct EoIrLaserOperatingState msg, *StanagBuf buf)
+{
+  packStanagString(msg.idd, buf, 0, 10);
+  packUint32(msg->messageInstance, buf, 10);
+  packUint32(msg->messageType, buf, 14);
+  packInt32(msg->messageLength, buf, 18);
+  packInt32(msg->streamId, buf, 22);
+  packInt32(msg->packetSequenceNumber, buf, 26);
+  packDouble(msg->timeStamp, buf, 30);
+  packInt32(msg->vehicleId, buf, 38);
+  packInt32(msg->cucsId, buf, 42);
+  packUint32(msg->stationNumber, buf, 46);
+  packUint8(msg->addressedSensor, buf, 50);
+  packUint8(msg->systemOperatingModeState, buf, 51);
+  packUint8(msg->eoCameraStatus, buf, 52);
+  packUint8(msg->irPolarityStatus, buf, 53);
+  packUint8(msg->imageOutputState, buf, 54);
+  packFloat(msg->actualCentrelineElevationAngle, buf, 55);
+  packFloat(msg->actualVerticalFieldOfView, buf, 59);
+  packFloat(msg->actualCentrelineAzimuthAngle, buf, 63);
+  packFloat(msg->actualHorizontalFieldOfView, buf, 67);
+  packFloat(msg->actualSensorRotationAngle, buf, 71);
+  packUint8(msg->imagePosition, buf, 75);
+  packDouble(msg->latitudeOfImageCentre, buf, 76);
+  packDouble(msg->longitudeOfImageCentre, buf, 84);
+  packFloat(msg->altitude, buf, 92);
+  packUint8(msg->pointingModeState, buf, 96);
+  packUint8(msg->preplanMode, buf, 97);
+  packFloat(msg->reportedRange, buf, 98);
+  packUint8(msg->laserPointerRangefinderStatus, buf, 102);
+  packUint8(msg->selectedLaserRangefinder, buf, 103);
+  packUint16(msg->laserDesignatorCode, buf, 104);
+  packUint8(msg->laserDesignatorStatus, buf, 106);
+}
+
+

@@ -27,6 +27,14 @@ import qualified Paths_ivory_serialize           as P
 import qualified Stanag.MessageAcknowledgement   as M
 import qualified Stanag.CucsAuthorisationRequest as C
 import qualified Stanag.VsmAuthorisationResponse as V
+
+import Stanag.EoIrConfigurationState (eoIrConfigurationStateMsgNum)
+import Stanag.EoIrLaserOperatingState (eoIrLaserOperatingStateMsgNum)
+import Stanag.EoIrLaserPayloadCommand (eoIrLaserPayloadCommandMsgNum)
+import Stanag.FieldConfigurationRequest (fieldConfigurationRequestMsgNum)
+import Stanag.PayloadConfiguration (payloadConfigurationMsgNum)
+import Stanag.PayloadSteeringCommand (payloadSteeringCommandMsgNum)
+
 import Stanag.Packing
 import Stanag.LOIMap
 
@@ -60,7 +68,6 @@ sendToCucs = importProc "sendToCucs" glueHeader
 
 [ivory|
 struct StationStatus {
- int32_t next; -- eventually will point to next component for passing data
  bool nextValid;
  bool overriden;
  int32_t authIdx; -- can be -1 for not valid

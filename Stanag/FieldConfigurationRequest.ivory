@@ -1,0 +1,89 @@
+include stanagpacking
+
+struct FieldConfigurationRequest
+{
+ struct ivory_string_Stanag idd;
+ uint32_t messageInstance;
+ uint32_t messageType;
+ int32_t messageLength;
+ int32_t streamId;
+ int32_t packetSequenceNumber;
+ double timeStamp;
+ int32_t vehicleId;
+ int32_t cucsId;
+ int32_t vsmId;
+ int32_t dataLinkId;
+ uint8_t requestType;
+ uint32_t requestedMessage;
+ uint8_t requestedField;
+ uint32_t stationNumber;
+ uint8_t sensorSelect;
+}
+
+
+uint32_t fieldConfigurationRequestMsgNum = 1200;
+uint32_t fieldConfigurationRequestMsgLen = 35;
+uint32_t fieldConfigurationRequestLength = 69;
+
+
+void fieldConfigurationRequest_setrequestedField(*struct FieldConfigurationRequest msg, uint8_t val)
+{
+   -- add log calls here
+   if (val < 1) { return; } else {}
+   if (val > 255) { return; } else {}
+  store msg.requestedField as val;
+}
+
+void fieldConfigurationRequest_unpack(*StanagBuf buf, * struct FieldConfigurationRequest msg)
+{
+  unpackStanagString(msg.idd, buf, 0, 10);
+  store msg.messageInstance as unpackUint32(buf, 10);
+  store msg.messageType as unpackUint32(buf, 14);
+  store msg.messageLength as unpackInt32(buf, 18);
+  store msg.streamId as unpackInt32(buf, 22);
+  store msg.packetSequenceNumber as unpackInt32(buf, 26);
+  store msg.timeStamp as unpackDouble(buf, 30);
+  store msg.vehicleId as unpackInt32(buf, 38);
+  store msg.cucsId as unpackInt32(buf, 42);
+  store msg.vsmId as unpackInt32(buf, 46);
+  store msg.dataLinkId as unpackInt32(buf, 50);
+  store msg.requestType as unpackUint8(buf, 54);
+  store msg.requestedMessage as unpackUint32(buf, 55);
+  store msg.requestedField as unpackUint8(buf, 59);
+  store msg.stationNumber as unpackUint32(buf, 60);
+  store msg.sensorSelect as unpackUint8(buf, 64);
+}
+
+
+void fieldConfigurationRequest_headerSet(* struct FieldConfigurationRequest msg)
+{
+  store (&fieldConfigurationRequestInstance) as *(&fieldConfigurationRequestInstance) + 1;
+  store msg.messageInstance as *(&fieldConfigurationRequestInstance);
+  store msg.messageType as 1200;
+  store msg.messageLength as 35;
+  store msg.streamId as -1;
+  store msg.packetSequenceNumber as -1;
+}
+
+
+void fieldConfigurationRequest_pack(* struct FieldConfigurationRequest msg, *StanagBuf buf)
+{
+  packStanagString(msg.idd, buf, 0, 10);
+  packUint32(msg->messageInstance, buf, 10);
+  packUint32(msg->messageType, buf, 14);
+  packInt32(msg->messageLength, buf, 18);
+  packInt32(msg->streamId, buf, 22);
+  packInt32(msg->packetSequenceNumber, buf, 26);
+  packDouble(msg->timeStamp, buf, 30);
+  packInt32(msg->vehicleId, buf, 38);
+  packInt32(msg->cucsId, buf, 42);
+  packInt32(msg->vsmId, buf, 46);
+  packInt32(msg->dataLinkId, buf, 50);
+  packUint8(msg->requestType, buf, 54);
+  packUint32(msg->requestedMessage, buf, 55);
+  packUint8(msg->requestedField, buf, 59);
+  packUint32(msg->stationNumber, buf, 60);
+  packUint8(msg->sensorSelect, buf, 64);
+}
+
+

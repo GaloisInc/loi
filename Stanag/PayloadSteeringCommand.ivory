@@ -1,0 +1,158 @@
+include stanagpacking
+
+struct PayloadSteeringCommand
+{
+ struct ivory_string_Stanag idd;
+ uint32_t messageInstance;
+ uint32_t messageType;
+ int32_t messageLength;
+ int32_t streamId;
+ int32_t packetSequenceNumber;
+ double timeStamp;
+ int32_t vehicleId;
+ int32_t cucsId;
+ uint32_t stationNumber;
+ float setCentrelineAzimuthAngle;
+ float setCentrelineElevationAngle;
+ uint8_t setZoom;
+ float setHorizontalFieldOfView;
+ float setVerticalFieldOfView;
+ float horizontalSlewRate;
+ float verticalSlewRate;
+ double latitude;
+ double longitude;
+ float altitude;
+ uint8_t altitudeType;
+ uint8_t setFocus;
+ uint8_t focusType;
+}
+
+
+uint32_t payloadSteeringCommandMsgNum = 200;
+uint32_t payloadSteeringCommandMsgLen = 68;
+uint32_t payloadSteeringCommandLength = 102;
+
+
+void payloadSteeringCommand_setsetCentrelineAzimuthAngle(*struct PayloadSteeringCommand msg, float val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.setCentrelineAzimuthAngle as val;
+}
+
+void payloadSteeringCommand_setsetCentrelineElevationAngle(*struct PayloadSteeringCommand msg, float val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.setCentrelineElevationAngle as val;
+}
+
+void payloadSteeringCommand_setsetHorizontalFieldOfView(*struct PayloadSteeringCommand msg, float val)
+{
+   -- add log calls here
+   if (val < 0) { return; } else {}
+   if (val > 2*pi) { return; } else {}
+  store msg.setHorizontalFieldOfView as val;
+}
+
+void payloadSteeringCommand_setsetVerticalFieldOfView(*struct PayloadSteeringCommand msg, float val)
+{
+   -- add log calls here
+   if (val < 0) { return; } else {}
+   if (val > 2*pi) { return; } else {}
+  store msg.setVerticalFieldOfView as val;
+}
+
+--void payloadSteeringCommand_setlatitude(*struct PayloadSteeringCommand msg, double val)
+--{
+--   -- add log calls here
+--   if (val < (-pi / 2.0)) { return; } else {}
+--   if (val > (pi / 2.0)) { return; } else {}
+--  store msg.latitude as val;
+--}
+
+void payloadSteeringCommand_setlongitude(*struct PayloadSteeringCommand msg, double val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.longitude as val;
+}
+
+void payloadSteeringCommand_setaltitude(*struct PayloadSteeringCommand msg, float val)
+{
+   -- add log calls here
+   if (val < -1000) { return; } else {}
+   if (val > 100000) { return; } else {}
+  store msg.altitude as val;
+}
+
+void payloadSteeringCommand_unpack(*StanagBuf buf, * struct PayloadSteeringCommand msg)
+{
+  unpackStanagString(msg.idd, buf, 0, 10);
+  store msg.messageInstance as unpackUint32(buf, 10);
+  store msg.messageType as unpackUint32(buf, 14);
+  store msg.messageLength as unpackInt32(buf, 18);
+  store msg.streamId as unpackInt32(buf, 22);
+  store msg.packetSequenceNumber as unpackInt32(buf, 26);
+  store msg.timeStamp as unpackDouble(buf, 30);
+  store msg.vehicleId as unpackInt32(buf, 38);
+  store msg.cucsId as unpackInt32(buf, 42);
+  store msg.stationNumber as unpackUint32(buf, 46);
+  store msg.setCentrelineAzimuthAngle as unpackFloat(buf, 50);
+  store msg.setCentrelineElevationAngle as unpackFloat(buf, 54);
+  store msg.setZoom as unpackUint8(buf, 58);
+  store msg.setHorizontalFieldOfView as unpackFloat(buf, 59);
+  store msg.setVerticalFieldOfView as unpackFloat(buf, 63);
+  store msg.horizontalSlewRate as unpackFloat(buf, 67);
+  store msg.verticalSlewRate as unpackFloat(buf, 71);
+  store msg.latitude as unpackDouble(buf, 75);
+  store msg.longitude as unpackDouble(buf, 83);
+  store msg.altitude as unpackFloat(buf, 91);
+  store msg.altitudeType as unpackUint8(buf, 95);
+  store msg.setFocus as unpackUint8(buf, 96);
+  store msg.focusType as unpackUint8(buf, 97);
+}
+
+
+void payloadSteeringCommand_headerSet(* struct PayloadSteeringCommand msg)
+{
+  store (&payloadSteeringCommandInstance) as *(&payloadSteeringCommandInstance) + 1;
+  store msg.messageInstance as *(&payloadSteeringCommandInstance);
+  store msg.messageType as 200;
+  store msg.messageLength as 68;
+  store msg.streamId as -1;
+  store msg.packetSequenceNumber as -1;
+}
+
+
+void payloadSteeringCommand_pack(* struct PayloadSteeringCommand msg, *StanagBuf buf)
+{
+  packStanagString(msg.idd, buf, 0, 10);
+  packUint32(msg->messageInstance, buf, 10);
+  packUint32(msg->messageType, buf, 14);
+  packInt32(msg->messageLength, buf, 18);
+  packInt32(msg->streamId, buf, 22);
+  packInt32(msg->packetSequenceNumber, buf, 26);
+  packDouble(msg->timeStamp, buf, 30);
+  packInt32(msg->vehicleId, buf, 38);
+  packInt32(msg->cucsId, buf, 42);
+  packUint32(msg->stationNumber, buf, 46);
+  packFloat(msg->setCentrelineAzimuthAngle, buf, 50);
+  packFloat(msg->setCentrelineElevationAngle, buf, 54);
+  packUint8(msg->setZoom, buf, 58);
+  packFloat(msg->setHorizontalFieldOfView, buf, 59);
+  packFloat(msg->setVerticalFieldOfView, buf, 63);
+  packFloat(msg->horizontalSlewRate, buf, 67);
+  packFloat(msg->verticalSlewRate, buf, 71);
+  packDouble(msg->latitude, buf, 75);
+  packDouble(msg->longitude, buf, 83);
+  packFloat(msg->altitude, buf, 91);
+  packUint8(msg->altitudeType, buf, 95);
+  packUint8(msg->setFocus, buf, 96);
+  packUint8(msg->focusType, buf, 97);
+}
+
+

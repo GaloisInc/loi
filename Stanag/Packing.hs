@@ -9,7 +9,7 @@ import Ivory.Language
 import Ivory.Stdlib.String
 import Ivory.Serialize
 
--- type StanagIdx = Ix 576
+type StanagIdx = Ix 576
 type StanagBuf = Array 576 (Stored Uint8)
 
 packIxAdd :: ANat n => Uint32 -> Ix n -> Uint32

@@ -1,0 +1,86 @@
+include stanagpacking
+
+struct PayloadConfiguration
+{
+ struct ivory_string_Stanag idd;
+ uint32_t messageInstance;
+ uint32_t messageType;
+ int32_t messageLength;
+ int32_t streamId;
+ int32_t packetSequenceNumber;
+ double timeStamp;
+ int32_t vehicleId;
+ int32_t cucsId;
+ int32_t vsmId;
+ uint32_t payloadStationsAvailable;
+ uint32_t stationNumber;
+ uint16_t payloadType;
+ uint8_t stationDoor;
+ uint8_t numberOfPayloadRecordingDevices;
+}
+
+
+uint32_t payloadConfigurationMsgNum = 300;
+uint32_t payloadConfigurationMsgLen = 32;
+uint32_t payloadConfigurationLength = 66;
+
+
+void payloadConfiguration_setnumberOfPayloadRecordingDevices(*struct PayloadConfiguration msg, uint8_t val)
+{
+   -- add log calls here
+   if (val < 0) { return; } else {}
+   if (val > 255) { return; } else {}
+  store msg.numberOfPayloadRecordingDevices as val;
+}
+
+void payloadConfiguration_unpack(*StanagBuf buf, * struct PayloadConfiguration msg)
+{
+  unpackStanagString(msg.idd, buf, 0, 10);
+  store msg.messageInstance as unpackUint32(buf, 10);
+  store msg.messageType as unpackUint32(buf, 14);
+  store msg.messageLength as unpackInt32(buf, 18);
+  store msg.streamId as unpackInt32(buf, 22);
+  store msg.packetSequenceNumber as unpackInt32(buf, 26);
+  store msg.timeStamp as unpackDouble(buf, 30);
+  store msg.vehicleId as unpackInt32(buf, 38);
+  store msg.cucsId as unpackInt32(buf, 42);
+  store msg.vsmId as unpackInt32(buf, 46);
+  store msg.payloadStationsAvailable as unpackUint32(buf, 50);
+  store msg.stationNumber as unpackUint32(buf, 54);
+  store msg.payloadType as unpackUint16(buf, 58);
+  store msg.stationDoor as unpackUint8(buf, 60);
+  store msg.numberOfPayloadRecordingDevices as unpackUint8(buf, 61);
+}
+
+
+void payloadConfiguration_headerSet(* struct PayloadConfiguration msg)
+{
+  store (&payloadConfigurationInstance) as *(&payloadConfigurationInstance) + 1;
+  store msg.messageInstance as *(&payloadConfigurationInstance);
+  store msg.messageType as 300;
+  store msg.messageLength as 32;
+  store msg.streamId as -1;
+  store msg.packetSequenceNumber as -1;
+}
+
+
+void payloadConfiguration_pack(* struct PayloadConfiguration msg, *StanagBuf buf)
+{
+  packStanagString(msg.idd, buf, 0, 10);
+  packUint32(msg->messageInstance, buf, 10);
+  packUint32(msg->messageType, buf, 14);
+  packInt32(msg->messageLength, buf, 18);
+  packInt32(msg->streamId, buf, 22);
+  packInt32(msg->packetSequenceNumber, buf, 26);
+  packDouble(msg->timeStamp, buf, 30);
+  packInt32(msg->vehicleId, buf, 38);
+  packInt32(msg->cucsId, buf, 42);
+  packInt32(msg->vsmId, buf, 46);
+  packUint32(msg->payloadStationsAvailable, buf, 50);
+  packUint32(msg->stationNumber, buf, 54);
+  packUint16(msg->payloadType, buf, 58);
+  packUint8(msg->stationDoor, buf, 60);
+  packUint8(msg->numberOfPayloadRecordingDevices, buf, 61);
+}
+
+

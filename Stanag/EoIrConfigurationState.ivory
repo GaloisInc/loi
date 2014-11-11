@@ -1,0 +1,156 @@
+include stanagpacking
+
+struct EoIrConfigurationState
+{
+ struct ivory_string_Stanag idd;
+ uint32_t messageInstance;
+ uint32_t messageType;
+ int32_t messageLength;
+ int32_t streamId;
+ int32_t packetSequenceNumber;
+ double timeStamp;
+ int32_t vehicleId;
+ int32_t cucsId;
+ int32_t vsmId;
+ uint32_t stationNumber;
+ struct ivory_string_Stanag eoIrType;
+ uint8_t eoIrTypeRevisionLevel;
+ int16_t eoVerticalImageDimension;
+ int16_t eoHorizontalImageDimension;
+ int16_t irVerticalImageDimension;
+ int16_t irHorizontalImageDimension;
+ float fieldOfRegardElevationMin;
+ float fieldOfRegardElevationMax;
+ float fieldOfRegardAzimuthMin;
+ float fieldOfRegardAzimuthMax;
+}
+
+
+uint32_t eoIrConfigurationStateMsgNum = 301;
+uint32_t eoIrConfigurationStateMsgLen = 63;
+uint32_t eoIrConfigurationStateLength = 97;
+
+
+void eoIrConfigurationState_seteoIrTypeRevisionLevel(*struct EoIrConfigurationState msg, uint8_t val)
+{
+   -- add log calls here
+   if (val < 0) { return; } else {}
+   if (val > 255) { return; } else {}
+  store msg.eoIrTypeRevisionLevel as val;
+}
+
+void eoIrConfigurationState_seteoVerticalImageDimension(*struct EoIrConfigurationState msg, int16_t val)
+{
+  store msg.eoVerticalImageDimension as val;
+}
+
+void eoIrConfigurationState_seteoHorizontalImageDimension(*struct EoIrConfigurationState msg, int16_t val)
+{
+  store msg.eoHorizontalImageDimension as val;
+}
+
+void eoIrConfigurationState_setirVerticalImageDimension(*struct EoIrConfigurationState msg, int16_t val)
+{
+  store msg.irVerticalImageDimension as val;
+}
+
+void eoIrConfigurationState_setirHorizontalImageDimension(*struct EoIrConfigurationState msg, int16_t val)
+{
+  store msg.irHorizontalImageDimension as val;
+}
+
+void eoIrConfigurationState_setfieldOfRegardElevationMin(*struct EoIrConfigurationState msg, float val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.fieldOfRegardElevationMin as val;
+}
+
+void eoIrConfigurationState_setfieldOfRegardElevationMax(*struct EoIrConfigurationState msg, float val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.fieldOfRegardElevationMax as val;
+}
+
+void eoIrConfigurationState_setfieldOfRegardAzimuthMin(*struct EoIrConfigurationState msg, float val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.fieldOfRegardAzimuthMin as val;
+}
+
+void eoIrConfigurationState_setfieldOfRegardAzimuthMax(*struct EoIrConfigurationState msg, float val)
+{
+   -- add log calls here
+   if (val < -pi) { return; } else {}
+   if (val > pi) { return; } else {}
+  store msg.fieldOfRegardAzimuthMax as val;
+}
+
+void eoIrConfigurationState_unpack(*StanagBuf buf, * struct EoIrConfigurationState msg)
+{
+  unpackStanagString(msg.idd, buf, 0, 10);
+  store msg.messageInstance as unpackUint32(buf, 10);
+  store msg.messageType as unpackUint32(buf, 14);
+  store msg.messageLength as unpackInt32(buf, 18);
+  store msg.streamId as unpackInt32(buf, 22);
+  store msg.packetSequenceNumber as unpackInt32(buf, 26);
+  store msg.timeStamp as unpackDouble(buf, 30);
+  store msg.vehicleId as unpackInt32(buf, 38);
+  store msg.cucsId as unpackInt32(buf, 42);
+  store msg.vsmId as unpackInt32(buf, 46);
+  store msg.stationNumber as unpackUint32(buf, 50);
+  unpackStanagString(msg.eoIrType, buf, 54, 14);
+  store msg.eoIrTypeRevisionLevel as unpackUint8(buf, 68);
+  store msg.eoVerticalImageDimension as unpackInt16(buf, 69);
+  store msg.eoHorizontalImageDimension as unpackInt16(buf, 71);
+  store msg.irVerticalImageDimension as unpackInt16(buf, 73);
+  store msg.irHorizontalImageDimension as unpackInt16(buf, 75);
+  store msg.fieldOfRegardElevationMin as unpackFloat(buf, 77);
+  store msg.fieldOfRegardElevationMax as unpackFloat(buf, 81);
+  store msg.fieldOfRegardAzimuthMin as unpackFloat(buf, 85);
+  store msg.fieldOfRegardAzimuthMax as unpackFloat(buf, 89);
+}
+
+
+void eoIrConfigurationState_headerSet(* struct EoIrConfigurationState msg)
+{
+  store (&eoIrConfigurationStateInstance) as *(&eoIrConfigurationStateInstance) + 1;
+  store msg.messageInstance as *(&eoIrConfigurationStateInstance);
+  store msg.messageType as 301;
+  store msg.messageLength as 63;
+  store msg.streamId as -1;
+  store msg.packetSequenceNumber as -1;
+}
+
+
+void eoIrConfigurationState_pack(* struct EoIrConfigurationState msg, *StanagBuf buf)
+{
+  packStanagString(msg.idd, buf, 0, 10);
+  packUint32(msg->messageInstance, buf, 10);
+  packUint32(msg->messageType, buf, 14);
+  packInt32(msg->messageLength, buf, 18);
+  packInt32(msg->streamId, buf, 22);
+  packInt32(msg->packetSequenceNumber, buf, 26);
+  packDouble(msg->timeStamp, buf, 30);
+  packInt32(msg->vehicleId, buf, 38);
+  packInt32(msg->cucsId, buf, 42);
+  packInt32(msg->vsmId, buf, 46);
+  packUint32(msg->stationNumber, buf, 50);
+  packStanagString(msg.eoIrType, buf, 54, 14);
+  packUint8(msg->eoIrTypeRevisionLevel, buf, 68);
+  packInt16(msg->eoVerticalImageDimension, buf, 69);
+  packInt16(msg->eoHorizontalImageDimension, buf, 71);
+  packInt16(msg->irVerticalImageDimension, buf, 73);
+  packInt16(msg->irHorizontalImageDimension, buf, 75);
+  packFloat(msg->fieldOfRegardElevationMin, buf, 77);
+  packFloat(msg->fieldOfRegardElevationMax, buf, 81);
+  packFloat(msg->fieldOfRegardAzimuthMin, buf, 85);
+  packFloat(msg->fieldOfRegardAzimuthMax, buf, 89);
+}
+
+

@@ -7,6 +7,18 @@ string struct Stanag 33
 string struct Stanaglong 400
 
 ------------------------------------------------------------
+-- Common Fields
+
+c_TYPE_OFFSET = 14;
+c_VEHICLEID_OFFSET = 38;
+c_CUCS_OFFSET = 42;
+
+uint32_t stanagGetType(*StanagBuf buf) { return unpackUint32(buf, c_TYPE_OFFSET); }
+ int32_t stanagGetVehicleId(*StanagBuf buf) { return unpackInt32(buf, c_VEHICLEID_OFFSET); }
+ int32_t stanagGetCucs(*StanagBuf buf) { return unpackInt32(buf, c_CUCS_OFFSET); }
+
+
+------------------------------------------------------------
 -- Checksum
 
 bool verifyChecksum(*StanagBuf buf, uint32_t len)
@@ -40,6 +52,10 @@ uint32_t stanagChecksum(*StanagBuf buf, uint32_t len)
 ------------------------------------------------------------
 -- Packing
 
+void packInt16(int16_t v, *StanagBuf buf, Index ix) {
+  $pack(toCArray(buf), ix, v);
+}
+
 void packInt32(int32_t v, *StanagBuf buf, Index ix) {
   $pack(toCArray(buf), ix, v);
 }
@@ -53,6 +69,10 @@ void packUint16(uint16_t v, *StanagBuf buf, Index ix) {
 }
 
 void packUint32(uint32_t v, *StanagBuf buf, Index ix) {
+  $pack(toCArray(buf), ix, v);
+}
+
+void packFloat(float v, *StanagBuf buf, Index ix) {
   $pack(toCArray(buf), ix, v);
 }
 
@@ -92,6 +112,11 @@ int16_t unpackInt16(*StanagBuf buf, Index ix) {
 }
 
 int32_t unpackInt32(*StanagBuf buf, Index ix) {
+  x <- $unpack(const(toCArray(buf)), ix);
+  return x;
+}
+
+float unpackFloat(*StanagBuf buf, Index ix) {
   x <- $unpack(const(toCArray(buf)), ix);
   return x;
 }
