@@ -3,3 +3,6 @@ Pseudo
 cabal.sandbox.config
 dist
 Config.mk
+*.dyn*
+*.hi
+*.o
